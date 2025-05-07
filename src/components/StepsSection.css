@@ -1,0 +1,96 @@
+.steps-section {
+  padding: 60px 20px;
+  background-color: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-header {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 50px;
+}
+
+.section-header h2 {
+  font-size: 2.2rem;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.section-header p {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+.steps-container {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.step {
+  flex: 0 0 calc(33.333% - 40px);
+  background-color: #fce4ec; /* Rose très clair */
+  border-radius: 8px;
+  padding: 30px;
+  margin: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.step:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.step-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: #ec407a; /* Rose plus foncé */
+  border-radius: 50%;
+  border: 2px solid #f8bbd0; /* Baby pink principal */
+}
+
+.step-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.step h3 {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  color: #ec407a; /* Rose plus foncé */
+}
+
+.step p {
+  color: #424242;
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .step {
+    flex: 0 0 calc(50% - 40px);
+  }
+}
+
+@media (max-width: 768px) {
+  .step {
+    flex: 0 0 100%;
+    max-width: 400px;
+    margin: 15px auto;
+  }
+  
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+}

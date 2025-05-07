@@ -1,0 +1,110 @@
+.footer {
+  background-color: #ec407a; /* Rose plus foncé */
+  color: white;
+  padding-top: 40px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 20px;
+}
+
+.footer-logo {
+  flex: 0 0 100%;
+  max-width: 300px;
+  margin-right: 60px;
+  margin-bottom: 30px;
+}
+
+.footer-logo span {
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.footer-logo p {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+.footer-links {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.footer-column {
+  flex: 0 0 auto;
+  margin-bottom: 30px;
+  margin-right: 40px;
+}
+
+.footer-column h4 {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.footer-column h4:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 30px;
+  height: 2px;
+  background-color: #f8bbd0; /* Baby pink principal */
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-column li {
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.footer-column li:hover {
+  color: #fce4ec; /* Rose très clair */
+}
+
+.footer-bottom {
+  background-color: rgba(0, 0, 0, 0.15);
+  text-align: center;
+  padding: 15px 0;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+  }
+  
+  .footer-logo {
+    margin-right: 0;
+    margin-bottom: 30px;
+  }
+  
+  .footer-links {
+    width: 100%;
+  }
+  
+  .footer-column {
+    flex: 0 0 100%;
+    margin-right: 0;
+  }
+}

@@ -1,0 +1,102 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 50px;
+  background-color: #f8bbd0; /* Baby pink principal */
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.logo-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li {
+  margin: 0 15px;
+  padding: 5px 0;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  color: #424242;
+  font-weight: 500;
+}
+
+.nav-links li:hover {
+  color: #ec407a; /* Rose plus foncé */
+}
+
+/* Effet de soulignement au survol */
+.nav-links li:after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #ec407a;
+  transition: width 0.3s;
+}
+
+.nav-links li:hover:after {
+  width: 100%;
+}
+
+.auth-button button {
+  background-color: white;
+  color: #ec407a;
+  border: 2px solid #ec407a;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.auth-button button:hover {
+  background-color: #ec407a;
+  color: white;
+}
+
+/* Fix pour l'espace à droite */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 15px 20px;
+    flex-wrap: wrap;
+  }
+  
+  .nav-links {
+    order: 3;
+    width: 100%;
+    margin-top: 15px;
+    justify-content: space-between;
+  }
+  
+  .nav-links li {
+    margin: 0 10px 0 0;
+  }
+}
