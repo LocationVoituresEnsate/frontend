@@ -1,16 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* index.css */
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-@layer components {
-  /* You can add custom component classes here */
-}
-
-/* For any custom animations not covered by Tailwind */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+body {
+  font-family: 'Poppins', sans-serif;
 }

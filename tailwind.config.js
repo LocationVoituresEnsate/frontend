@@ -1,24 +1,18 @@
 // tailwind.config.js
-/** @type {import('tailwindcss').Config} */
-export default {
-    theme: {
-      extend: {
-        colors: {
-          'primary': '#f8bbd0', // Baby pink
-          'secondary': '#ec407a', // Darker rose
-          'accent': '#fce4ec', // Very light rose
-          'text': '#333',
-          'light': '#fff',
-        },
+module.exports = {
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        primary: '#fadde1',     // Babypink
+        secondary: '#C1C1C1',    // Gris
+        fuchsia: '#D4006D',      // Rose fuchsia
+        lightpink: '#FAD2E1',    // Rose clair
+        text: '#333333',         // Noir foncé
       },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
-        }
-      },
-      animation: {
-        float: 'float 6s ease-in-out infinite',
-      }
     },
-  }
+  },
+  plugins: [],
+};
+
+
