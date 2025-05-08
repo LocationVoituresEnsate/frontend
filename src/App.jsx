@@ -5,13 +5,11 @@ import HeroSection from './components/LandingPage/HeroSection';
 import StepsSection from './components/LandingPage/StepsSection';
 import Footer from './components/LandingPage/Footer';
 import LoginForm from './components/LandingPage/LoginForm';
+import RegisterForm from './components/LandingPage/RegisterForm';
 import ManagerLayout from './components/Dashboard/ManagerLayout';
 import DashboardManager from './components/Dashboard/DashboardManager';
+import { Outlet } from 'react-router-dom';
 
-
-
-
-// Importez les autres composants du dashboard
 
 // Page d'accueil principale
 const Home = () => (
@@ -42,6 +40,7 @@ const App = () => {
         <Route path="/fonctionnalites" element={<div>Fonctionnalités (À venir)</div>} />
         <Route path="/contact" element={<div>Contact (À venir)</div>} />
         <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<RegisterForm />} />
       </Route>
       
       {/* Routes du dashboard - sans navbar ni footer */}
