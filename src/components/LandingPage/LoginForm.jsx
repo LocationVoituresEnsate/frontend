@@ -90,31 +90,6 @@ const LoginForm = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-fuchsia focus:ring-lightpink border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-text"
-                >
-                  Se souvenir de moi
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a
-                  href="#"
-                  className="font-medium text-fuchsia hover:text-fuchsia/80"
-                >
-                  Mot de passe oublié?
-                </a>
-              </div>
-            </div>
 
             <div>
               <button

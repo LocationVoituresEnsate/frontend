@@ -36,11 +36,6 @@ const SidebarManager = () => {
           <span>Gestion des clients</span>
         </NavLink>
 
-        <NavLink to="/manager/utilisateurs" className={linkClass}>
-          <FaUsers size={18} />
-          <span>Gestion des utilisateurs</span>
-        </NavLink>
-
         <NavLink to="/manager/voitures" className={linkClass}>
           <FaCar size={18} />
           <span>Gestion des voitures</span>

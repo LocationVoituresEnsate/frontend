@@ -8,6 +8,7 @@ import LoginForm from './components/LandingPage/LoginForm';
 import RegisterForm from './components/LandingPage/RegisterForm';
 import ManagerLayout from './components/Dashboard/ManagerLayout';
 import DashboardManager from './components/Dashboard/DashboardManager';
+import ClientManager from './components/Dashboard/ClientsManager';
 import { Outlet } from 'react-router-dom';
 
 
@@ -46,8 +47,7 @@ const App = () => {
       {/* Routes du dashboard - sans navbar ni footer */}
       <Route path="/manager" element={<ManagerLayout />}>
         <Route index element={<DashboardManager />} />
-        <Route path="clients" element={<div>Gestion des clients</div>} />
-        <Route path="utilisateurs" element={<div>Gestion des utilisateurs</div>} />
+        <Route path="clients" element={<ClientManager/>} />
         <Route path="voitures" element={<div>Gestion des voitures</div>} />
         <Route path="reservations" element={<div>Gestion des réservations</div>} />
         <Route path="rapports" element={<div>Rapports</div>} />
