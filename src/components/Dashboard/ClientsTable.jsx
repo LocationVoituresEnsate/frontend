@@ -1,68 +1,242 @@
 import React from 'react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Paper, 
+  Typography,
+  IconButton,
+  Box,
+  Tooltip,
+  useTheme
+} from '@mui/material';
+import { 
+  Edit as EditIcon, 
+  Delete as DeleteIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  LocationOn as LocationIcon,
+  Badge as BadgeIcon
+} from '@mui/icons-material';
 
 const ClientsTable = ({ clients, onEdit, onDelete }) => {
+  const theme = useTheme();
+
   return (
-    <div className="bg-white rounded-lg p-6 shadow">
-      <h2 className="text-2xl font-semibold text-fuchsia mb-6">Liste des clients</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-full">
-          <thead>
-            <tr>
-              <th className="py-3 px-4 text-left bg-fuchsia text-white font-medium rounded-tl-lg">ID</th>
-              <th className="py-3 px-4 text-left bg-fuchsia text-white font-medium">Nom</th>
-              <th className="py-3 px-4 text-left bg-fuchsia text-white font-medium">Prénom</th>
-              <th className="py-3 px-4 text-left bg-fuchsia text-white font-medium">Email</th>
-              <th className="py-3 px-4 text-left bg-fuchsia text-white font-medium">Téléphone</th>
-              <th className="py-3 px-4 text-left bg-fuchsia text-white font-medium">Adresse</th>
-              <th className="py-3 px-4 text-left bg-fuchsia text-white font-medium">Numéro de permis</th>
-              <th className="py-3 px-4 text-left bg-fuchsia text-white font-medium">Pays du permis</th>
-              <th className="py-3 px-4 text-center bg-fuchsia text-white font-medium rounded-tr-lg">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+    <Paper 
+      elevation={2} 
+      sx={{ 
+        p: 3, 
+        borderRadius: 2,
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+      }}
+    >
+      <Typography 
+        variant="h5" 
+        component="h2" 
+        sx={{ 
+          mb: 3, 
+          fontWeight: 600, 
+          color: theme.palette.primary.main,
+          borderBottom: `1px solid ${theme.palette.primary.light}`,
+          pb: 1
+        }}
+      >
+        Liste des clients
+      </Typography>
+      
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell 
+                sx={{ 
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  fontWeight: 500,
+                  borderTopLeftRadius: '8px',
+                  py: 2
+                }}
+              >
+                ID
+              </TableCell>
+              <TableCell 
+                sx={{ bgcolor: 'primary.main', color: 'white', fontWeight: 500, py: 2 }}
+              >
+                Nom
+              </TableCell>
+              <TableCell 
+                sx={{ bgcolor: 'primary.main', color: 'white', fontWeight: 500, py: 2 }}
+              >
+                Prénom
+              </TableCell>
+              <TableCell 
+                sx={{ bgcolor: 'primary.main', color: 'white', fontWeight: 500, py: 2 }}
+              >
+                Email
+              </TableCell>
+              <TableCell 
+                sx={{ bgcolor: 'primary.main', color: 'white', fontWeight: 500, py: 2 }}
+              >
+                Téléphone
+              </TableCell>
+              <TableCell 
+                sx={{ bgcolor: 'primary.main', color: 'white', fontWeight: 500, py: 2 }}
+              >
+                Adresse
+              </TableCell>
+              <TableCell 
+                sx={{ bgcolor: 'primary.main', color: 'white', fontWeight: 500, py: 2 }}
+              >
+                Numéro de permis
+              </TableCell>
+              <TableCell 
+                sx={{ bgcolor: 'primary.main', color: 'white', fontWeight: 500, py: 2 }}
+              >
+                Pays du permis
+              </TableCell>
+              <TableCell 
+                align="center"
+                sx={{ 
+                  bgcolor: 'primary.main', 
+                  color: 'white', 
+                  fontWeight: 500,
+                  borderTopRightRadius: '8px',
+                  py: 2
+                }}
+              >
+                Actions
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {clients.length > 0 ? (
               clients.map((client, index) => (
-                <tr key={index} className={`border-b ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-lightpink/20 transition-colors duration-150`}>
-                  <td className="py-4 px-4">{index + 1}</td>
-                  <td className="py-4 px-4 font-medium">{client.last_name}</td>
-                  <td className="py-4 px-4">{client.first_name}</td>
-                  <td className="py-4 px-4 text-blue-600">{client.email}</td>
-                  <td className="py-4 px-4">{client.phone_number}</td>
-                  <td className="py-4 px-4">{client.address}</td>
-                  <td className="py-4 px-4">{client.license_number}</td>
-                  <td className="py-4 px-4">{client.license_country}</td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center justify-center space-x-3">
-                      <button 
-                        className="text-blue-500 hover:bg-blue-50 p-2 rounded-full transition-colors duration-200"
-                        onClick={() => onEdit(client)}
-                        title="Modifier"
+                <TableRow 
+                  key={index}
+                  sx={{ 
+                    '&:nth-of-type(even)': { 
+                      bgcolor: theme.palette.grey[50] 
+                    },
+                    '&:hover': { 
+                      bgcolor: `${theme.palette.primary.main}10`,
+                      transition: 'background-color 0.2s' 
+                    },
+                    transition: 'background-color 0.2s',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell sx={{ fontWeight: 500 }}>{client.last_name}</TableCell>
+                  <TableCell>{client.first_name}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <EmailIcon sx={{ 
+                        color: 'primary.main', 
+                        mr: 1, 
+                        fontSize: 18,
+                        opacity: 0.7 
+                      }} />
+                      <Typography 
+                        component="a" 
+                        href={`mailto:${client.email}`} 
+                        sx={{ 
+                          color: 'primary.main',
+                          textDecoration: 'none',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
                       >
-                        <FaEdit size={18} />
-                      </button>
-                      <button 
-                        className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors duration-200"
-                        onClick={() => onDelete(client)}
-                        title="Supprimer"
-                      >
-                        <FaTrash size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                        {client.email}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <PhoneIcon sx={{ color: 'primary.main', mr: 1, fontSize: 18, opacity: 0.7 }} />
+                      {client.phone_number}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <LocationIcon sx={{ color: 'primary.main', mr: 1, fontSize: 18, opacity: 0.7 }} />
+                      {client.address}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <BadgeIcon sx={{ color: 'primary.main', mr: 1, fontSize: 18, opacity: 0.7 }} />
+                      {client.license_number}
+                    </Box>
+                  </TableCell>
+                  <TableCell>{client.license_country}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                      <Tooltip title="Modifier" arrow>
+                        <IconButton 
+                          size="small" 
+                          color="primary" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(client);
+                          }}
+                          sx={{ 
+                            '&:hover': { 
+                              transform: 'scale(1.1)',
+                              bgcolor: 'rgba(25, 118, 210, 0.1)'
+                            },
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Supprimer" arrow>
+                        <IconButton 
+                          size="small" 
+                          color="error" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(client);
+                          }}
+                          sx={{ 
+                            '&:hover': { 
+                              transform: 'scale(1.1)',
+                              bgcolor: 'rgba(211, 47, 47, 0.1)'
+                            },
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
               ))
             ) : (
-              <tr>
-                <td colSpan="9" className="py-8 text-center text-gray-500">
+              <TableRow>
+                <TableCell 
+                  colSpan={9} 
+                  align="center"
+                  sx={{ 
+                    py: 4, 
+                    color: 'text.secondary',
+                    fontSize: '1rem'
+                  }}
+                >
                   Aucun client trouvé
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
   );
 };
 
