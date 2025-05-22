@@ -11,34 +11,59 @@ const ManagersAdmin = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/manager/')
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Erreur lors du chargement des managers');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        // Ajuste en fonction de ta structure JSON
-        // Si ta réponse est { managers: [...] }
-        const list = data.managers || data;
-        setManagers(list);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  const token = localStorage.getItem('token');  // Récupérez le token depuis localStorage
 
-  const handleAddManager = (managerData) => {
-    if (editingManager) {
-      setManagers(managers.map(m => m.id === editingManager.id ? managerData : m));
-      setEditingManager(null);
-    } else {
-      setManagers([...managers, managerData]);
+  fetch('http://127.0.0.1:8000/manager/', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`, // Envoyez le token dans l'en-tête
+    },
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error('Erreur lors du chargement des managers');
+      }
+      return res.json();
+    })
+    .then((data) => {
+      const list = data.managers || data;
+      setManagers(list);
+      setLoading(false);
+    })
+    .catch((err) => {
+      setError(err.message);
+      setLoading(false);
+    });
+}, []);
+
+
+  const handleAddManager = async (managerData) => {
+    try {
+    const token = localStorage.getItem('token'); // Get token from storage
+    console.log(localStorage.getItem('token')); 
+    const response = await fetch('http://127.0.0.1:8000/manager/create/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // Add this line
+      },
+      body: JSON.stringify(managerData),
+    });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Ajouter le nouveau manager à la liste
+        setManagers((prevManagers) => [...prevManagers, data.manager]);
+        setIsFormVisible(false);
+      } else {
+        // Afficher une erreur si quelque chose ne va pas
+        setError(data.message || 'Erreur lors de la création du manager');
+      }
+    } catch (err) {
+      setError('Erreur réseau');
     }
-    setIsFormVisible(false);
   };
 
   const handleEditManager = (manager) => {
@@ -48,7 +73,7 @@ const ManagersAdmin = () => {
 
   const handleDeleteManager = (managerToDelete) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce manager ?')) {
-      setManagers(managers.filter(m => m.id !== managerToDelete.id));
+      setManagers(managers.filter((m) => m.id !== managerToDelete.id));
     }
   };
 

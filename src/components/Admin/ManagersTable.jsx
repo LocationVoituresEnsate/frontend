@@ -60,6 +60,9 @@ const ManagersTable = ({ managers, onEdit, onDelete }) => {
               <TableCell sx={{ bgcolor: 'primary.main', color: 'white', fontWeight: 500, py: 2 }}>
                 Adresse
               </TableCell>
+              <TableCell sx={{ bgcolor: 'primary.main', color: 'white', fontWeight: 500, py: 2 }}>
+                Role
+              </TableCell>
             
               <TableCell
                 align="center"
@@ -126,6 +129,13 @@ const ManagersTable = ({ managers, onEdit, onDelete }) => {
                       {manager.address}
                     </Box>
                   </TableCell>
+                    <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <HomeIcon sx={{ color: 'primary.main', mr: 1, fontSize: 18, opacity: 0.7 }} />
+                      {manager.role}
+                    </Box>
+                  </TableCell>
+
 
                  
 
@@ -159,6 +169,7 @@ const ManagersTable = ({ managers, onEdit, onDelete }) => {
                       </Tooltip>
                     </Box>
                   </TableCell>
+                  
 
                 </TableRow>
               ))
