@@ -7,6 +7,8 @@ const LoginForm = () => {
     email: "",
     password: "",
   });
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,19 +18,50 @@ const LoginForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logique de connexion ici
-    console.log("Tentative de connexion avec:", credentials);
-    // Après connexion réussie, rediriger vers la page d'accueil
+    setErrorMessage(null);
+    setLoading(true);
 
-    navigate("/manager");
+    try {
+      const response = await fetch("http://localhost:8000/auth/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Stockage du token JWT
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userRole", data.role);
+        localStorage.setItem("username", data.username);
+
+        // Redirection vers la page manager
+        if (data.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/manager");
+      }
+    } else {
+      setErrorMessage(data.message || "Erreur lors de la connexion");
+    }
+  } catch (error) {
+    setErrorMessage("Erreur réseau, veuillez réessayer.");
+  } finally {
+    setLoading(false);
+  }
   };
 
   return (
     <div className="min-h-screen bg-primary flex items-center justify-center px-4">
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md relative overflow-hidden">
-        {/* Élément décoratif */}
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-lightpink/30 rounded-full"></div>
 
         <div className="relative z-10">
@@ -90,13 +123,19 @@ const LoginForm = () => {
               />
             </div>
 
+            {errorMessage && (
+              <p className="text-red-600 text-sm">{errorMessage}</p>
+            )}
 
             <div>
               <button
                 type="submit"
-                className="w-full bg-primary hover:bg-lightpink text-fuchsia font-bold py-2.5 px-4 rounded-md transition-colors duration-300"
+                disabled={loading}
+                className={`w-full ${
+                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-primary hover:bg-lightpink"
+                } text-fuchsia font-bold py-2.5 px-4 rounded-md transition-colors duration-300`}
               >
-                CONNEXION
+                {loading ? "Connexion..." : "CONNEXION"}
               </button>
             </div>
           </form>

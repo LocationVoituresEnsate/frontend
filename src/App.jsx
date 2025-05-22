@@ -7,9 +7,12 @@ import Footer from './components/LandingPage/Footer';
 import LoginForm from './components/LandingPage/LoginForm';
 import RegisterForm from './components/LandingPage/RegisterForm';
 import ManagerLayout from './components/Dashboard/ManagerLayout';
+import AdminLayout from './components/Admin/AdminLayout';
 import DashboardManager from './components/Dashboard/DashboardManager';
+import DashboardAdmin from './components/Admin/DashboardAdmin';
 import ClientManager from './components/Dashboard/ClientsManager';
 import { Outlet } from 'react-router-dom';
+import ManagersAdmin from './components/Admin/ManagersAdmin';
 
 
 // Page d'accueil principale
@@ -53,6 +56,18 @@ const App = () => {
         <Route path="rapports" element={<div>Rapports</div>} />
         <Route path="parametres" element={<div>Paramètres</div>} />
       </Route>
+
+      {/* Route dashboard pour admin */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<DashboardAdmin />} />
+        <Route path="manager"  element={<ManagersAdmin/>} />
+        {/* <Route path="voitures" element={<div>Gestion des voitures</div>} />
+        <Route path="reservations" element={<div>Gestion des réservations</div>} />
+        <Route path="rapports" element={<div>Rapports</div>} />
+        <Route path="parametres" element={<div>Paramètres</div>} /> */}
+      </Route>
+
+      
       
       {/* Route de test directe */}
       <Route path="/test-dashboard" element={<DashboardManager />} />
