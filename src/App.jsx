@@ -10,6 +10,7 @@ import ManagerLayout from './components/Dashboard/ManagerLayout';
 import DashboardManager from './components/Dashboard/DashboardManager';
 import ClientManager from './components/Dashboard/ClientsManager';
 import { Outlet } from 'react-router-dom';
+import ReservationsManager from './components/ReservationsManager';
 
 
 // Page d'accueil principale
@@ -49,7 +50,7 @@ const App = () => {
         <Route index element={<DashboardManager />} />
         <Route path="clients" element={<ClientManager/>} />
         <Route path="voitures" element={<div>Gestion des voitures</div>} />
-        <Route path="reservations" element={<div>Gestion des réservations</div>} />
+        <Route path="reservations" element={<ReservationsManager/>} />
         <Route path="rapports" element={<div>Rapports</div>} />
         <Route path="parametres" element={<div>Paramètres</div>} />
       </Route>
