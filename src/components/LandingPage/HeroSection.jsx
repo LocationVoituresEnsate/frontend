@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import porscheImage from '../../assets/porsche-rouge.png';
 import { 
   Box, 
@@ -25,6 +26,7 @@ import {
 } from '@mui/icons-material';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [scrolled, setScrolled] = useState(false);
@@ -181,6 +183,7 @@ const HeroSection = () => {
                       size="large"
                       color="primary"
                       startIcon={<DashboardIcon />}
+                      onClick={() => navigate('/login')}
                       sx={{ 
                         px: 4, 
                         py: 1.5,

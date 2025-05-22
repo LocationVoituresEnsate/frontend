@@ -64,7 +64,7 @@ const Navbar = () => {
   };
 
   const navigationItems = [
-    { label: 'Tableau de bord', path: '/', icon: HomeIcon },
+    { label: 'Home', path: '/', icon: HomeIcon },
     { label: 'Gestion Véhicules', path: '#services', icon: ServicesIcon },
     { label: 'Réservations', path: '#fonctionnalites', icon: FeaturesIcon },
     { label: 'Support', path: '#contact', icon: ContactIcon }
@@ -123,17 +123,7 @@ const Navbar = () => {
             >
               Location<span style={{ color: theme.palette.primary.main }}>Voitures</span>
             </Typography>
-            <Chip
-              label="Portail Admin"
-              size="small"
-              variant="outlined"
-              color="primary"
-              sx={{ 
-                height: 18,
-                fontSize: '0.7rem',
-                mt: 0.5
-              }}
-            />
+            
           </Box>
         </Box>
 

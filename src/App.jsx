@@ -1,5 +1,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { CssBaseline, Box } from '@mui/material';
+import { Outlet } from 'react-router-dom';
+
+// Components imports
 import Navbar from './components/LandingPage/Navbar';
 import HeroSection from './components/LandingPage/HeroSection';
 import StepsSection from './components/LandingPage/StepsSection';
@@ -9,8 +14,77 @@ import RegisterForm from './components/LandingPage/RegisterForm';
 import ManagerLayout from './components/Dashboard/ManagerLayout';
 import DashboardManager from './components/Dashboard/DashboardManager';
 import ClientManager from './components/Dashboard/ClientsManager';
-import { Outlet } from 'react-router-dom';
 
+// Thème Material-UI personnalisé
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#e91e63', // Rose/Fuchsia
+      light: '#f8bbd0',
+      dark: '#c2185b',
+      contrastText: '#ffffff',
+    },
+    secondary: {
+      main: '#c1c1c1', // Gris
+      light: '#f5f5f5',
+      dark: '#9e9e9e',
+    },
+    background: {
+      default: '#f9f9f9',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#333333',
+      secondary: '#666666',
+    },
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Arial", sans-serif',
+    h1: {
+      fontWeight: 700,
+    },
+    h2: {
+      fontWeight: 700,
+    },
+    h3: {
+      fontWeight: 600,
+    },
+    h4: {
+      fontWeight: 600,
+    },
+    button: {
+      fontWeight: 600,
+    },
+  },
+  shape: {
+    borderRadius: 8,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 600,
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        },
+      },
+    },
+  },
+});
 
 // Page d'accueil principale
 const Home = () => (
@@ -20,43 +94,169 @@ const Home = () => (
   </>
 );
 
-// Conteneur avec navbar et footer
+// Conteneur avec navbar et footer - Version Material-UI
 const MainLayout = () => (
-  <div className="flex flex-col min-h-screen w-full overflow-x-hidden bg-light">
+  <Box 
+    sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      minHeight: '100vh', 
+      width: '100%',
+      bgcolor: 'background.default'
+    }}
+  >
     <Navbar />
-    <main className="flex-grow">
+    <Box 
+      component="main" 
+      sx={{ 
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       <Outlet />
-    </main>
+    </Box>
     <Footer />
-  </div>
+  </Box>
+);
+
+// Pages placeholder avec style Material-UI
+const PlaceholderPage = ({ title, description }) => (
+  <Box 
+    sx={{ 
+      minHeight: '80vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      pt: { xs: 12, md: 10 }, // Compensation navbar fixe
+      px: 3,
+      textAlign: 'center',
+      bgcolor: 'background.default'
+    }}
+  >
+    <Box
+      sx={{
+        p: 4,
+        borderRadius: 2,
+        bgcolor: 'background.paper',
+        boxShadow: 2,
+        maxWidth: 500
+      }}
+    >
+      <h1 style={{ 
+        color: '#e91e63', 
+        marginBottom: '16px',
+        fontSize: '2rem',
+        fontWeight: 'bold'
+      }}>
+        {title}
+      </h1>
+      <p style={{ 
+        color: '#666666',
+        fontSize: '1.1rem',
+        margin: 0
+      }}>
+        {description}
+      </p>
+    </Box>
+  </Box>
 );
 
 const App = () => {
   return (
-    <Routes>
-      {/* Layout principal avec navbar et footer */}
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/services" element={<div>Services (À venir)</div>} />
-        <Route path="/fonctionnalites" element={<div>Fonctionnalités (À venir)</div>} />
-        <Route path="/contact" element={<div>Contact (À venir)</div>} />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Routes>
+        {/* Layout principal avec navbar et footer */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route 
+            path="/services" 
+            element={
+              <PlaceholderPage 
+                title="Services" 
+                description="Cette section détaillera tous nos services de location de véhicules. Page en cours de développement."
+              />
+            } 
+          />
+          <Route 
+            path="/fonctionnalites" 
+            element={
+              <PlaceholderPage 
+                title="Fonctionnalités" 
+                description="Découvrez toutes les fonctionnalités avancées de notre plateforme de gestion. Page en cours de développement."
+              />
+            } 
+          />
+          <Route 
+            path="/contact" 
+            element={
+              <PlaceholderPage 
+                title="Contact" 
+                description="Contactez notre équipe pour toute question ou demande d'assistance. Page en cours de développement."
+              />
+            } 
+          />
+          <Route path="/register" element={<RegisterForm />} />
+        </Route>
+        
+        {/* Pages sans navbar ni footer */}
         <Route path="/login" element={<LoginForm />} />
-        <Route path="/register" element={<RegisterForm />} />
-      </Route>
-      
-      {/* Routes du dashboard - sans navbar ni footer */}
-      <Route path="/manager" element={<ManagerLayout />}>
-        <Route index element={<DashboardManager />} />
-        <Route path="clients" element={<ClientManager/>} />
-        <Route path="voitures" element={<div>Gestion des voitures</div>} />
-        <Route path="reservations" element={<div>Gestion des réservations</div>} />
-        <Route path="rapports" element={<div>Rapports</div>} />
-        <Route path="parametres" element={<div>Paramètres</div>} />
-      </Route>
-      
-      {/* Route de test directe */}
-      <Route path="/test-dashboard" element={<DashboardManager />} />
-    </Routes>
+        
+        {/* Routes du dashboard - sans navbar ni footer */}
+        <Route path="/manager" element={<ManagerLayout />}>
+          <Route index element={<DashboardManager />} />
+          <Route path="clients" element={<ClientManager />} />
+          <Route 
+            path="voitures" 
+            element={
+              <Box sx={{ p: 3 }}>
+                <h1 style={{ color: '#e91e63' }}>Gestion des Véhicules</h1>
+                <p>Module de gestion de la flotte automobile en cours de développement.</p>
+              </Box>
+            } 
+          />
+          <Route 
+            path="reservations" 
+            element={
+              <Box sx={{ p: 3 }}>
+                <h1 style={{ color: '#e91e63' }}>Gestion des Réservations</h1>
+                <p>Module de gestion des réservations clients en cours de développement.</p>
+              </Box>
+            } 
+          />
+          <Route 
+            path="rapports" 
+            element={
+              <Box sx={{ p: 3 }}>
+                <h1 style={{ color: '#e91e63' }}>Rapports et Analyses</h1>
+                <p>Module de reporting et d'analyse des performances en cours de développement.</p>
+              </Box>
+            } 
+          />
+          <Route 
+            path="parametres" 
+            element={
+              <Box sx={{ p: 3 }}>
+                <h1 style={{ color: '#e91e63' }}>Paramètres</h1>
+                <p>Configuration et paramètres de l'application en cours de développement.</p>
+              </Box>
+            } 
+          />
+        </Route>
+        
+        {/* Route de test directe */}
+        <Route 
+          path="/test-dashboard" 
+          element={
+            <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+              <DashboardManager />
+            </Box>
+          } 
+        />
+      </Routes>
+    </ThemeProvider>
   );
 };
 

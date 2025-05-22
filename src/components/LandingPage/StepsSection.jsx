@@ -222,17 +222,7 @@ const StepsSection = () => {
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item xs={6}>
-                    <Card elevation={1}>
-                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                        <NotificationIcon color="primary" sx={{ fontSize: 35, mb: 1 }} />
-                        <Typography variant="subtitle1" fontWeight="bold">Alertes</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Notifications auto
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+                  
                 </Grid>
               </Grid>
               <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
