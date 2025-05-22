@@ -1,82 +1,277 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Button, 
+  Box, 
+  IconButton, 
+  Menu, 
+  MenuItem,
+  useTheme,
+  useMediaQuery,
+  Avatar,
+  Chip
+} from '@mui/material';
+import {
+  Menu as MenuIcon,
+  Home as HomeIcon,
+  BusinessCenter as ServicesIcon,
+  Settings as FeaturesIcon,
+  ContactSupport as ContactIcon,
+  Login as LoginIcon,
+  DirectionsCar as CarIcon
+} from '@mui/icons-material';
 import logo from '../../assets/logo.jpg';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleNavigate = (path) => {
-    navigate(path);
-    console.log(`Navigating to: ${path}`); // Pour déboguer
+    if (path.startsWith('#')) {
+      // Pour les ancres (sections de la page)
+      const element = document.getElementById(path.substring(1));
+      if (element) {
+        element.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    } else if (path === '/') {
+      // Pour revenir au haut de la page (HeroSection)
+      window.scrollTo({ 
+        top: 0, 
+        behavior: 'smooth' 
+      });
+    } else {
+      // Pour la navigation normale vers d'autres pages
+      navigate(path);
+    }
+    setAnchorEl(null);
+    console.log(`Navigating to: ${path}`);
   };
 
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const navigationItems = [
+    { label: 'Tableau de bord', path: '/', icon: HomeIcon },
+    { label: 'Gestion Véhicules', path: '#services', icon: ServicesIcon },
+    { label: 'Réservations', path: '#fonctionnalites', icon: FeaturesIcon },
+    { label: 'Support', path: '#contact', icon: ContactIcon }
+  ];
+
   return (
-    <nav className="w-full bg-white shadow-sm py-2">
-      <div className="flex justify-between items-center px-6 lg:px-20">
-        {/* Logo */}
-        <img
-          src={logo}
-          alt="logo"
-          className="w-[4.5rem] cursor-pointer"
+    <AppBar 
+      position="fixed" 
+      elevation={2}
+      sx={{ 
+        bgcolor: 'white', 
+        color: 'text.primary',
+        py: 0.5,
+        zIndex: theme.zIndex.appBar,
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(0,0,0,0.1)'
+      }}
+    >
+      <Toolbar sx={{ 
+        justifyContent: 'space-between',
+        px: { xs: 2, lg: 10 }
+      }}>
+        {/* Logo et titre */}
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            cursor: 'pointer',
+            '&:hover': {
+              transform: 'scale(1.02)',
+              transition: 'transform 0.2s ease'
+            }
+          }}
           onClick={() => handleNavigate('/')}
-        />
-        
-        {/* Navigation Links */}
-        <div className="hidden md:flex gap-6 text-text font-medium text-sm">
-          <button
-            className="relative group py-1"
-            onClick={() => handleNavigate('/')}
-          >
-            <span className="hover:text-fuchsia transition-colors duration-300">
-              Accueil
-            </span>
-            <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-fuchsia transition-all duration-300 group-hover:w-full"></span>
-          </button>
-          <button
-            className="relative group py-1"
-            onClick={() => handleNavigate('/services')}
-          >
-            <span className="hover:text-fuchsia transition-colors duration-300">
-              Services
-            </span>
-            <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-fuchsia transition-all duration-300 group-hover:w-full"></span>
-          </button>
-          <button
-            className="relative group py-1"
-            onClick={() => handleNavigate('/fonctionnalites')}
-          >
-            <span className="hover:text-fuchsia transition-colors duration-300">
-              Fonctionnalités
-            </span>
-            <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-fuchsia transition-all duration-300 group-hover:w-full"></span>
-          </button>
-          <button
-            className="relative group py-1"
-            onClick={() => handleNavigate('/contact')}
-          >
-            <span className="hover:text-fuchsia transition-colors duration-300">
-              Contact
-            </span>
-            <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-fuchsia transition-all duration-300 group-hover:w-full"></span>
-          </button>
-        </div>
-
-        {/* Login Button */}
-        <button
-          className="bg-primary hover:bg-lightpink text-fuchsia font-medium py-1.5 px-5 rounded-md text-sm transition-colors duration-300"
-          onClick={() => handleNavigate('/login')}
         >
-          Connexion
-        </button>
+          <Avatar
+            src={logo}
+            alt="LocationVoitures"
+            sx={{ 
+              width: 50, 
+              height: 50, 
+              mr: 2,
+              border: '2px solid',
+              borderColor: 'primary.main'
+            }}
+          />
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{
+                fontWeight: 'bold',
+                color: 'text.primary',
+                lineHeight: 1
+              }}
+            >
+              Location<span style={{ color: theme.palette.primary.main }}>Voitures</span>
+            </Typography>
+            <Chip
+              label="Portail Admin"
+              size="small"
+              variant="outlined"
+              color="primary"
+              sx={{ 
+                height: 18,
+                fontSize: '0.7rem',
+                mt: 0.5
+              }}
+            />
+          </Box>
+        </Box>
 
-        {/* Mobile Menu Button */}
-        <button className="md:hidden text-text">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-    </nav>
+        {/* Navigation Links - Desktop */}
+        {!isMobile && (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {navigationItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <Button
+                  key={item.path}
+                  startIcon={<IconComponent />}
+                  onClick={() => handleNavigate(item.path)}
+                  sx={{
+                    color: 'text.primary',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0,
+                      height: 2,
+                      bgcolor: 'primary.main',
+                      transition: 'width 0.3s ease'
+                    },
+                    '&:hover': {
+                      bgcolor: 'rgba(233, 30, 99, 0.05)',
+                      color: 'primary.main',
+                      '&::after': {
+                        width: '80%'
+                      }
+                    }
+                  }}
+                >
+                  {item.label}
+                </Button>
+              );
+            })}
+          </Box>
+        )}
+
+        {/* Actions */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Login Button */}
+          <Button
+            variant="contained"
+            startIcon={<LoginIcon />}
+            onClick={() => handleNavigate('/login')}
+            sx={{
+              bgcolor: 'primary.main',
+              color: 'white',
+              textTransform: 'none',
+              fontWeight: 'bold',
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+              boxShadow: 'none',
+              '&:hover': {
+                bgcolor: 'primary.dark',
+                color: 'white',
+                boxShadow: theme.shadows[4],
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Connexion
+          </Button>
+
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <IconButton
+              edge="end"
+              color="primary"
+              aria-label="menu"
+              onClick={handleMenu}
+              sx={{
+                bgcolor: 'rgba(233, 30, 99, 0.1)',
+                '&:hover': {
+                  bgcolor: 'rgba(233, 30, 99, 0.2)'
+                }
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+        </Box>
+
+        {/* Mobile Menu */}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+          PaperProps={{
+            elevation: 3,
+            sx: {
+              mt: 1,
+              minWidth: 200,
+              borderRadius: 2,
+              '& .MuiMenuItem-root': {
+                px: 2,
+                py: 1.5,
+                borderRadius: 1,
+                mx: 1,
+                my: 0.5
+              }
+            }
+          }}
+        >
+          {navigationItems.map((item) => {
+            const IconComponent = item.icon;
+            return (
+              <MenuItem
+                key={item.path}
+                onClick={() => handleNavigate(item.path)}
+                sx={{
+                  '&:hover': {
+                    bgcolor: 'rgba(233, 30, 99, 0.05)',
+                    color: 'primary.main'
+                  }
+                }}
+              >
+                <IconComponent sx={{ mr: 2, color: 'primary.main' }} />
+                <Typography variant="body1">{item.label}</Typography>
+              </MenuItem>
+            );
+          })}
+        </Menu>
+      </Toolbar>
+    </AppBar>
   );
 };
 
