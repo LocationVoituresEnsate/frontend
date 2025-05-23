@@ -148,7 +148,7 @@ const CarCard = () => {
         </div>
       )}
 
-{showReserveForm && (
+      {showReserveForm && (
         <div className="modal-overlay">
           <div className="modal-content reservation-form">
             <h3>Réserver cette voiture</h3>
