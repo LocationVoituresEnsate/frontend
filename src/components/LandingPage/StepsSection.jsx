@@ -222,7 +222,17 @@ const StepsSection = () => {
                       </CardContent>
                     </Card>
                   </Grid>
-                  
+                  <Grid item xs={6}>
+                    <Card elevation={1}>
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <NotificationIcon color="primary" sx={{ fontSize: 35, mb: 1 }} />
+                        <Typography variant="subtitle1" fontWeight="bold">Alertes</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Notifications auto
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
                 </Grid>
               </Grid>
               <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
@@ -301,9 +311,9 @@ const StepsSection = () => {
               </Typography>
             </Box>
 
-            <Grid container spacing={4}>
+            <Grid container spacing={4} justifyContent="center">
               <Grid item xs={12} md={4}>
-                <Card elevation={1} sx={{ height: '100%' }}>
+                <Card elevation={1} sx={{ height: '100%', maxWidth: 350, mx: 'auto' }}>
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
                     <PhoneIcon color="primary" sx={{ fontSize: 50, mb: 2 }} />
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -319,7 +329,7 @@ const StepsSection = () => {
                 </Card>
               </Grid>
               <Grid item xs={12} md={4}>
-                <Card elevation={1} sx={{ height: '100%' }}>
+                <Card elevation={1} sx={{ height: '100%', maxWidth: 350, mx: 'auto' }}>
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
                     <TrainingIcon color="primary" sx={{ fontSize: 50, mb: 2 }} />
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -335,7 +345,7 @@ const StepsSection = () => {
                 </Card>
               </Grid>
               <Grid item xs={12} md={4}>
-                <Card elevation={1} sx={{ height: '100%' }}>
+                <Card elevation={1} sx={{ height: '100%', maxWidth: 350, mx: 'auto' }}>
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
                     <HelpIcon color="primary" sx={{ fontSize: 50, mb: 2 }} />
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
