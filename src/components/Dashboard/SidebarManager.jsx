@@ -24,7 +24,7 @@ import {
   Assignment as AssignmentIcon,
   ManageAccounts as ManageAccountsIcon,
   Person as PersonIcon,
-  Notifications as NotificationIcon,
+  
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon
 } from '@mui/icons-material';
@@ -71,13 +71,7 @@ const SidebarManager = () => {
             <PersonIcon fontSize="small" />
           </Avatar>
           
-          <Badge 
-            badgeContent={4} 
-            color="error" 
-            sx={{ position: 'absolute', right: 96 }}
-          >
-            <NotificationIcon color="action" sx={{ fontSize: 16 }} />
-          </Badge>
+         
         </Box>
         
         <Typography variant="body2" fontWeight="bold" sx={{ mt: 0.5, color: 'text.primary' }}>

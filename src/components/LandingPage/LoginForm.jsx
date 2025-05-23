@@ -196,7 +196,7 @@ const LoginForm = () => {
                   />
                 </Box>
 
-                
+               
               </Box>
 
               {/* Formulaire */}
@@ -244,6 +244,7 @@ const LoginForm = () => {
                   required
                   fullWidth
                   variant="outlined"
+                  autoComplete="current-password"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -262,6 +263,11 @@ const LoginForm = () => {
                       </InputAdornment>
                     ),
                   }}
+                  inputProps={{
+                    style: { 
+                      WebkitTextSecurity: showPassword ? 'none' : 'disc' 
+                    }
+                  }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       '&:hover fieldset': {
@@ -270,6 +276,15 @@ const LoginForm = () => {
                       '&.Mui-focused fieldset': {
                         borderColor: 'primary.main',
                       }
+                    },
+                    '& input[type="password"]::-ms-reveal': {
+                      display: 'none'
+                    },
+                    '& input[type="password"]::-webkit-credentials-auto-fill-button': {
+                      display: 'none'
+                    },
+                    '& input[type="password"]::-webkit-strong-password-auto-fill-button': {
+                      display: 'none'
                     }
                   }}
                 />
