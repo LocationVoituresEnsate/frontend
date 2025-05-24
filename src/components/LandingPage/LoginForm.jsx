@@ -43,6 +43,7 @@ const LoginForm = () => {
   };
 
   const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
@@ -355,6 +356,7 @@ const LoginForm = () => {
       </Container>
     </Box>
   );
+};
 };
 
 export default LoginForm;
