@@ -247,23 +247,12 @@ const App = () => {
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<DashboardAdmin />} />
         <Route path="manager"  element={<ManagersAdmin/>} />
-        {/* <Route path="voitures" element={<div>Gestion des voitures</div>} />
-        <Route path="reservations" element={<div>Gestion des réservations</div>} />
-        <Route path="rapports" element={<div>Rapports</div>} />
-        <Route path="parametres" element={<div>Paramètres</div>} /> */}
+      
       </Route>
 
       
         
-        {/* Route de test directe */}
-        <Route 
-          path="/test-dashboard" 
-          element={
-            <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-              <DashboardManager />
-            </Box>
-          } 
-        />
+        
       </Routes>
     </ThemeProvider>
   );
