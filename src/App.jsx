@@ -87,6 +87,7 @@ const theme = createTheme({
     },
   },
 });import ManagersAdmin from './components/Admin/ManagersAdmin';
+import ReservationsManager from './components/ReservationsManager';
 
 
 // Page d'accueil principale
@@ -220,15 +221,8 @@ const App = () => {
               </Box>
             } 
           />
-          <Route 
-            path="reservations" 
-            element={
-              <Box sx={{ p: 3 }}>
-                <h1 style={{ color: '#e91e63' }}>Gestion des Réservations</h1>
-                <p>Module de gestion des réservations clients en cours de développement.</p>
-              </Box>
-            } 
-          />
+                  <Route path="reservations" element={<ReservationsManager/>} />
+
           <Route 
             path="rapports" 
             element={
