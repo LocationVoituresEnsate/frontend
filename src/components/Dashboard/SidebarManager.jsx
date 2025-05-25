@@ -186,7 +186,7 @@ const SidebarManager = () => {
                 <CarIcon fontSize="small" />
               </ListItemIcon>
               <ListItemText 
-                primary="Gestion des voitures" 
+                primary="Gestion des réservations" 
                 primaryTypographyProps={{ 
                   fontSize: '0.8rem',
                   fontWeight: location.pathname === '/manager/voitures' ? 600 : 400
@@ -214,7 +214,7 @@ const SidebarManager = () => {
                 <CalendarIcon fontSize="small" />
               </ListItemIcon>
               <ListItemText 
-                primary="Gestion des réservations" 
+                primary="Passer une réservation" 
                 primaryTypographyProps={{ 
                   fontSize: '0.8rem',
                   fontWeight: location.pathname === '/manager/reservations' ? 600 : 400

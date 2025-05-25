@@ -16,6 +16,7 @@ import AdminLayout from './components/Admin/AdminLayout';
 import DashboardManager from './components/Dashboard/DashboardManager';
 import DashboardAdmin from './components/Admin/DashboardAdmin';
 import ClientManager from './components/Dashboard/ClientsManager';
+import ReservationRequests from './components/Dashboard/ReservationRequests';
 
 // Thème Material-UI personnalisé
 const theme = createTheme({
@@ -215,12 +216,7 @@ const App = () => {
           <Route 
             path="voitures" 
             element={
-              <Box sx={{ p: 3 }}>
-                <h1 style={{ color: '#e91e63' }}>Gestion des Véhicules</h1>
-                <p>Module de gestion de la flotte automobile en cours de développement.</p>
-              </Box>
-            } 
-          />
+              <ReservationRequests/>} />
                   <Route path="reservations" element={<ReservationsManager/>} />
 
           <Route 
