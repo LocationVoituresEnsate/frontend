@@ -1,53 +1,28 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import Image from "../assets/porsche-rouge.png";
-import "./ProductCard.css";
+import DefaultImage from "../assets/porsche-rouge.png"; // Image par défaut si pas d'image
 
-const CarCard = () => {
+const CarCard = ({ car }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [showReserveForm, setShowReserveForm] = useState(false);
 
-  // Reservation form state
   const [client, setClient] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
-  const car = {
-    brand: "Volkswagen",
-    model: "Passat",
-    year: 2022,
-    registrationNumber: "AB-123-CD",
-    color: "Rouge",
-    dailyPrice: 75.0,
-    mileage: 45000,
-    fuelType: "Essence",
-    transmission: "Automatique",
-    engineSize: 2.0,
-    power: 150,
-    doors: 4,
-    seats: 5,
-    trunkCapacity: 450,
-    insuranceNumber: "INS-456789",
-    insuranceExpiry: "2025-01-01",
-    technicalInspectionDate: "2024-06-01",
-    nextInspectionDue: "2026-06-01",
-    imageUrl: Image,
-  };
+  // Clients exemples
+  const clients = ["Client A", "Client B", "Client C"];
 
-  const clients = ["Client A", "Client B", "Client C"]; // example clients
+  // Dates réservées — adapter si ta voiture a une propriété reservation_periods
+  const bookedRanges = car.reservation_periods || [];
 
-  const bookedRanges = [
-    { start: new Date(2025, 4, 20), end: new Date(2025, 4, 22) },
-    { start: new Date(2025, 4, 28), end: new Date(2025, 4, 30) },
-  ];
-
-  // Generate an array of disabled dates from bookedRanges
   const getBookedDates = () => {
     let dates = [];
     bookedRanges.forEach(({ start, end }) => {
       let curr = new Date(start);
-      while (curr <= end) {
+      const last = new Date(end);
+      while (curr <= last) {
         dates.push(new Date(curr));
         curr.setDate(curr.getDate() + 1);
       }
@@ -56,6 +31,7 @@ const CarCard = () => {
   };
 
   const bookedDates = getBookedDates();
+
   const setDateRange = (dates) => {
     const [start, end] = dates;
     setStartDate(start);
@@ -68,22 +44,19 @@ const CarCard = () => {
         <i className="fa-solid fa-trash"></i>
       </span>
 
-      <img src={Image} alt="Car" />
+      <img src={car.imageUrl || DefaultImage} alt={`${car.brand} ${car.model}`} />
 
       <div className="description">
-        <h2>Volkswagen</h2>
+        <h2>{car.brand || "Marque inconnue"}</h2>
         <p className="price">
-          $5.00 <span>$6.5</span>
+          ${car.dailyPrice ? car.dailyPrice.toFixed(2) : "N/A"} / jour
         </p>
-        <p className="para">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
-        </p>
+        <p className="para">{car.description || "Pas de description disponible."}</p>
         <button className="btn" onClick={() => setShowReserveForm(true)}>
-          Reserver
+          Réserver
         </button>
       </div>
 
-      {/* Info icon */}
       <span className="icon info-icon" title="Info">
         <i
           className="fa-solid fa-circle-info"
@@ -91,59 +64,28 @@ const CarCard = () => {
         ></i>
       </span>
 
-      {/* Info Modal */}
       {showInfo && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-top-band"></div>
             <h3> Informations Complètes</h3>
             <ul>
-              <li>
-                <strong>Marque :</strong> Volkswagen
-              </li>
-              <li>
-                <strong>Modèle :</strong> Passat
-              </li>
-              <li>
-                <strong>Année :</strong> 2022
-              </li>
-              <li>
-                <strong>Immatriculation :</strong> AB-123-CD
-              </li>
-              <li>
-                <strong>Couleur :</strong> Rouge
-              </li>
-              <li>
-                <strong>Prix / jour :</strong> $75
-              </li>
-              <li>
-                <strong>Kilométrage :</strong> 45000 km
-              </li>
-              <li>
-                <strong>Carburant :</strong> Essence
-              </li>
-              <li>
-                <strong>Transmission :</strong> Automatique
-              </li>
-              <li>
-                <strong>Moteur :</strong> 2 L
-              </li>
-              <li>
-                <strong>Puissance :</strong> 150 ch
-              </li>
-              <li>
-                <strong>Portes :</strong> 4
-              </li>
-              <li>
-                <strong>Places :</strong> 5
-              </li>
-              <li>
-                <strong>Coffre :</strong> 450 L
-              </li>
+              <li><strong>Marque :</strong> {car.brand || "N/A"}</li>
+              <li><strong>Modèle :</strong> {car.model || "N/A"}</li>
+              <li><strong>Année :</strong> {car.year || "N/A"}</li>
+              <li><strong>Immatriculation :</strong> {car.registrationNumber || "N/A"}</li>
+              <li><strong>Couleur :</strong> {car.color || "N/A"}</li>
+              <li><strong>Prix / jour :</strong> ${car.dailyPrice ? car.dailyPrice.toFixed(2) : "N/A"}</li>
+              <li><strong>Kilométrage :</strong> {car.mileage || "N/A"} km</li>
+              <li><strong>Carburant :</strong> {car.fuelType || "N/A"}</li>
+              <li><strong>Transmission :</strong> {car.transmission || "N/A"}</li>
+              <li><strong>Moteur :</strong> {car.engineSize || "N/A"} L</li>
+              <li><strong>Puissance :</strong> {car.power || "N/A"} ch</li>
+              <li><strong>Portes :</strong> {car.doors || "N/A"}</li>
+              <li><strong>Places :</strong> {car.seats || "N/A"}</li>
+              <li><strong>Coffre :</strong> {car.trunkCapacity || "N/A"} L</li>
             </ul>
-            <button className="close-btn" onClick={() => setShowInfo(false)}>
-              Fermer
-            </button>
+            <button className="close-btn" onClick={() => setShowInfo(false)}>Fermer</button>
           </div>
         </div>
       )}
@@ -160,13 +102,9 @@ const CarCard = () => {
                   value={client}
                   onChange={(e) => setClient(e.target.value)}
                 >
-                  <option value="" disabled>
-                    -- Sélectionner --
-                  </option>
+                  <option value="" disabled>-- Sélectionner --</option>
                   {clients.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
               </label>
@@ -176,10 +114,10 @@ const CarCard = () => {
                   selectsRange
                   startDate={startDate}
                   endDate={endDate}
-                  onChange={(update) => setDateRange(update)}
+                  onChange={(dates) => setDateRange(dates)}
                   excludeDates={bookedDates}
                   minDate={new Date()}
-                  inline // This makes the full calendar always visible
+                  inline
                 />
               </div>
 

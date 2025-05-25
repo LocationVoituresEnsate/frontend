@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+
 import { 
+  Tooltip,
   Box, 
   Paper, 
   Typography, 
@@ -11,21 +13,11 @@ import {
   ListItemText, 
   Divider, 
   useTheme,
-  IconButton,
-  Badge,
-  Tooltip,
-  Collapse
+  IconButton
 } from '@mui/material';
 import { 
   Dashboard as DashboardIcon,
   People as PeopleIcon,
-  Security as SecurityIcon,
-  Settings as SettingsIcon,
-  History as HistoryIcon,
-  Person as PersonIcon,
-  Notifications as NotificationIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
   Logout as LogoutIcon
 } from '@mui/icons-material';
 
@@ -34,45 +26,33 @@ const SidebarAdmin = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [openSections, setOpenSections] = useState({
-    gestion: true,
-    administration: false
-  });
-
-  const toggleSection = (section) => {
-    setOpenSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
   const handleLogout = async () => {
-  const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
-  if (!token) {
-    console.error('Aucun token trouvé, impossible de se déconnecter.');
-    return;
-  }
-
-  try {
-    const response = await fetch('http://localhost:8000/auth/logout/', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json', // parfois nécessaire même si pas de body
-      },
-    });
-
-    if (response.ok) {
-      localStorage.clear();
-      navigate('/login');
-    } else {
-      console.error('Erreur lors de la déconnexion', await response.text());
+    if (!token) {
+      console.error('Aucun token trouvé, impossible de se déconnecter.');
+      return;
     }
-  } catch (error) {
-    console.error('Erreur réseau lors de la déconnexion', error);
-  }
-};
+
+    try {
+      const response = await fetch('http://localhost:8000/auth/logout/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        localStorage.clear();
+        navigate('/login');
+      } else {
+        console.error('Erreur lors de la déconnexion', await response.text());
+      }
+    } catch (error) {
+      console.error('Erreur réseau lors de la déconnexion', error);
+    }
+  };
 
   return (
     <Paper 
@@ -99,7 +79,7 @@ const SidebarAdmin = () => {
             mb: 1
           }}
         >
-          <PersonIcon fontSize="large" />
+          <PeopleIcon fontSize="large" />
         </Avatar>
         <Typography variant="body1" fontWeight="bold" color="text.primary">
           Admin Dashboard
@@ -107,14 +87,6 @@ const SidebarAdmin = () => {
         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
           Espace administrateur
         </Typography>
-
-        <Badge 
-          badgeContent={7} 
-          color="error" 
-          sx={{ mt: 1, mx: 'auto', display: 'inline-flex' }}
-        >
-          <NotificationIcon color="action" fontSize="medium" />
-        </Badge>
       </Box>
 
       <Divider />
@@ -148,150 +120,42 @@ const SidebarAdmin = () => {
           />
         </ListItem>
 
-        {/* Section Gestion */}
-        <Box sx={{ mt: 1 }}>
-          <ListItem
-            button
-            onClick={() => toggleSection('gestion')}
-            sx={{
-              py: 0.25,
-              borderRadius: 1,
-              bgcolor: 'background.default'
+        {/* Manager */}
+        <ListItem
+          component={NavLink}
+          to="/admin/manager"
+          sx={{
+            borderRadius: 1,
+            mb: 0.5,
+            color: location.pathname === '/admin/manager' ? 'primary.main' : 'text.primary',
+            bgcolor: location.pathname === '/admin/manager' ? `${theme.palette.primary.main}10` : 'transparent',
+            '&:hover': {
+              bgcolor: location.pathname === '/admin/manager' ? `${theme.palette.primary.main+'10'}` : 'action.hover'
+            }
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+            <PeopleIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText 
+            primary="Managers"
+            primaryTypographyProps={{ 
+              fontSize: '0.85rem',
+              fontWeight: location.pathname === '/admin/manager' ? 600 : 400
             }}
-          >
-            <ListItemText
-              primary="GESTION"
-              primaryTypographyProps={{
-                fontSize: '0.65rem',
-                fontWeight: 600,
-                color: 'text.secondary',
-                letterSpacing: 0.5
-              }}
-            />
-            <IconButton edge="end" size="small" sx={{ p: 0 }}>
-              {openSections.gestion ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-            </IconButton>
-          </ListItem>
-
-          <Collapse in={openSections.gestion} timeout="auto" unmountOnExit>
-            {/* Managers */}
-            <ListItem
-              component={NavLink}
-              to="/admin/manager"
-              sx={{
-                pl: 2,
-                borderRadius: 1,
-                mt: 0.5,
-                color: location.pathname === '/admin/manager' ? 'primary.main' : 'text.primary',
-                bgcolor: location.pathname === '/admin/manager' ? `${theme.palette.primary.main}10` : 'transparent',
-                '&:hover': {
-                  bgcolor: location.pathname === '/admin/manager' ? `${theme.palette.primary.main}20` : 'action.hover'
-                }
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 28, color: 'inherit' }}>
-                <PeopleIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Managers"
-                primaryTypographyProps={{
-                  fontSize: '0.8rem',
-                  fontWeight: location.pathname === '/admin/manager' ? 600 : 400
-                }}
-              />
-            </ListItem>
-          </Collapse>
-        </Box>
-
-        {/* Section Administration */}
-        <Box sx={{ mt: 1 }}>
-          <ListItem
-            button
-            onClick={() => toggleSection('administration')}
-            sx={{
-              py: 0.25,
-              borderRadius: 1,
-              bgcolor: 'background.default'
-            }}
-          >
-            <ListItemText
-              primary="ADMINISTRATION"
-              primaryTypographyProps={{
-                fontSize: '0.65rem',
-                fontWeight: 600,
-                color: 'text.secondary',
-                letterSpacing: 0.5
-              }}
-            />
-            <IconButton edge="end" size="small" sx={{ p: 0 }}>
-              {openSections.administration ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-            </IconButton>
-          </ListItem>
-
-          <Collapse in={openSections.administration} timeout="auto" unmountOnExit>
-            {/* Exemples d'items Administration */}
-            <ListItem
-              component={NavLink}
-              to="/admin/rapports"
-              sx={{
-                pl: 2,
-                borderRadius: 1,
-                mt: 0.5,
-                color: location.pathname === '/admin/rapports' ? 'primary.main' : 'text.primary',
-                bgcolor: location.pathname === '/admin/rapports' ? `${theme.palette.primary.main}10` : 'transparent',
-                '&:hover': {
-                  bgcolor: location.pathname === '/admin/rapports' ? `${theme.palette.primary.main}20` : 'action.hover'
-                }
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 28, color: 'inherit' }}>
-                <HistoryIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Rapports"
-                primaryTypographyProps={{
-                  fontSize: '0.8rem',
-                  fontWeight: location.pathname === '/admin/rapports' ? 600 : 400
-                }}
-              />
-            </ListItem>
-            <ListItem
-              component={NavLink}
-              to="/admin/parametres"
-              sx={{
-                pl: 2,
-                borderRadius: 1,
-                mt: 0.5,
-                color: location.pathname === '/admin/parametres' ? 'primary.main' : 'text.primary',
-                bgcolor: location.pathname === '/admin/parametres' ? `${theme.palette.primary.main}10` : 'transparent',
-                '&:hover': {
-                  bgcolor: location.pathname === '/admin/parametres' ? `${theme.palette.primary.main}20` : 'action.hover'
-                }
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 28, color: 'inherit' }}>
-                <SettingsIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Paramètres"
-                primaryTypographyProps={{
-                  fontSize: '0.8rem',
-                  fontWeight: location.pathname === '/admin/parametres' ? 600 : 400
-                }}
-              />
-            </ListItem>
-          </Collapse>
-        </Box>
+          />
+        </ListItem>
 
         {/* Déconnexion */}
         <Divider sx={{ my: 1 }} />
         <ListItem
           button
+          component={NavLink}
           onClick={handleLogout}
           sx={{
             borderRadius: 1,
             color: 'text.primary',
-            '&:hover': { bgcolor: theme.palette.action.hover }
+            '&:hover': { bgcolor: theme.palette.primary.main+'10' }
           }}
         >
           <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
