@@ -1,308 +1,662 @@
-import React, { useState, useRef } from "react";
-import Card from "./Card";
-import "./ProductCard.css";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Grid,
+  Typography,
+  Alert,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Paper,
+  IconButton,
+  ImageList,
+  ImageListItem,
+  ImageListItemBar,
+  Fab,
+} from "@mui/material";
+import {
+  Add as AddIcon,
+  PhotoCamera as PhotoCameraIcon,
+  Delete as DeleteIcon,
+  Close as CloseIcon,
+} from "@mui/icons-material";
+
+// Image par défaut si aucune image
+const DefaultCarImage = "https://via.placeholder.com/300x150?text=No+Image";
+
+// Composant CarCard
+const CarCard = ({ car }) => {
+  const [showInfo, setShowInfo] = useState(false);
+  const [showReserveForm, setShowReserveForm] = useState(false);
+
+  const [client, setClient] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  const clients = ["Client A", "Client B", "Client C"]; // Exemple clients statiques
+
+  const handleReservationSubmit = (e) => {
+    e.preventDefault();
+    if (!client || !startDate || !endDate) {
+      alert("Veuillez remplir tous les champs");
+      return;
+    }
+    alert(
+      `Réservation confirmée pour ${client} du ${startDate.toLocaleDateString()} au ${endDate.toLocaleDateString()}`
+    );
+    setShowReserveForm(false);
+    setClient("");
+    setStartDate(null);
+    setEndDate(null);
+  };
+
+  return (
+    <Box
+      sx={{
+        border: "1px solid #ccc",
+        borderRadius: 2,
+        width: 320,
+        m: 1,
+        p: 1.5,
+        boxShadow: 1,
+        position: "relative",
+      }}
+    >
+      <img
+        src={car.imageUrl || DefaultCarImage}
+        alt={`${car.brand} ${car.model}`}
+        style={{ width: "100%", height: 150, objectFit: "cover", borderRadius: 8 }}
+      />
+      <Typography variant="h6" mt={1}>
+        {car.brand || "Marque inconnue"} {car.model || ""}
+      </Typography>
+      <Typography variant="subtitle1" color="text.secondary">
+        {car.dailyPrice !== undefined
+          ? `${parseFloat(car.dailyPrice).toFixed(2)} € / jour`
+          : "Prix non disponible"}
+      </Typography>
+
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ mt: 1 }}
+        onClick={() => setShowReserveForm(true)}
+      >
+        Réserver
+      </Button>
+
+      <Button variant="outlined" sx={{ mt: 1, ml: 1 }} onClick={() => setShowInfo(!showInfo)}>
+        {showInfo ? "Cacher Infos" : "Voir Infos"}
+      </Button>
+
+      {showInfo && (
+        <Paper sx={{ mt: 2, p: 2, bgcolor: "#f9f9f9" }}>
+          <Typography variant="body2">
+            <strong>Année :</strong> {car.year || "N/A"}
+          </Typography>
+          <Typography variant="body2">
+            <strong>Immatriculation :</strong> {car.registrationNumber || "N/A"}
+          </Typography>
+          <Typography variant="body2">
+            <strong>Couleur :</strong> {car.color || "N/A"}
+          </Typography>
+          <Typography variant="body2">
+            <strong>Kilométrage :</strong> {car.mileage !== undefined ? car.mileage : "N/A"} km
+          </Typography>
+          <Typography variant="body2">
+            <strong>Carburant :</strong> {car.fuelType || "N/A"}
+          </Typography>
+          <Typography variant="body2">
+            <strong>Transmission :</strong> {car.transmission || "N/A"}
+          </Typography>
+          <Typography variant="body2">
+            <strong>Moteur :</strong> {car.engineSize !== undefined ? car.engineSize : "N/A"} L
+          </Typography>
+          <Typography variant="body2">
+            <strong>Puissance :</strong> {car.power !== undefined ? car.power : "N/A"} ch
+          </Typography>
+          <Typography variant="body2">
+            <strong>Portes :</strong> {car.doors !== undefined ? car.doors : "N/A"}
+          </Typography>
+          <Typography variant="body2">
+            <strong>Places :</strong> {car.seats !== undefined ? car.seats : "N/A"}
+          </Typography>
+          <Typography variant="body2">
+            <strong>Coffre :</strong> {car.trunkCapacity !== undefined ? car.trunkCapacity : "N/A"} L
+          </Typography>
+        </Paper>
+      )}
+
+      {showReserveForm && (
+        <Dialog
+          open={showReserveForm}
+          onClose={() => setShowReserveForm(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 2 } }}
+        >
+          <DialogTitle>Réserver la voiture</DialogTitle>
+          <DialogContent>
+            <form onSubmit={handleReservationSubmit}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Client</InputLabel>
+                <Select
+                  value={client}
+                  onChange={(e) => setClient(e.target.value)}
+                  label="Client"
+                  required
+                >
+                  <MenuItem value="">
+                    <em>-- Sélectionner --</em>
+                  </MenuItem>
+                  {clients.map((c) => (
+                    <MenuItem key={c} value={c}>
+                      {c}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Ici tu peux rajouter un date picker comme react-datepicker */}
+
+              <DialogActions>
+                <Button onClick={() => setShowReserveForm(false)}>Annuler</Button>
+                <Button type="submit" variant="contained">
+                  Confirmer
+                </Button>
+              </DialogActions>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+    </Box>
+  );
+};
 
 const ReservationsManager = () => {
   const [showForm, setShowForm] = useState(false);
   const [carPhotos, setCarPhotos] = useState([]);
   const [previewPhotos, setPreviewPhotos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
+
+  const [cars, setCars] = useState([]);
+  const [loadingCars, setLoadingCars] = useState(false);
+  const [errorCars, setErrorCars] = useState(null);
+
+  const [formData, setFormData] = useState({
+    brand: "",
+    model: "",
+    year: "",
+    registrationNumber: "",
+    color: "",
+    dailyPrice: "",
+    mileage: "",
+    fuelType: "",
+    transmission: "",
+    engineSize: "",
+    power: "",
+    doors: "",
+    seats: "",
+    trunkCapacity: "",
+  });
+
   const fileInputRef = useRef(null);
+
+  const fetchCars = () => {
+    setLoadingCars(true);
+    setErrorCars(null);
+    const token = localStorage.getItem("token");
+    fetch("http://127.0.0.1:8000/voitures/get/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Erreur lors du chargement des voitures");
+        return res.json();
+      })
+      .then((data) => {
+        // Vérifie si les données sont dans data.cars ou data directement
+        const list = data.cars || data || [];
+        setCars(list);
+        setLoadingCars(false);
+      })
+      .catch((err) => {
+        setErrorCars(err.message);
+        setLoadingCars(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchCars();
+  }, []);
 
   const handlePhotoUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length + carPhotos.length > 5) {
-      alert("Maximum 5 photos allowed");
+      setMessage("Maximum 5 photos autorisées");
+      setMessageType("error");
       return;
     }
-
-    const newPhotos = [...carPhotos, ...files];
-    setCarPhotos(newPhotos);
-
-    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
-    setPreviewPhotos((prev) => [...prev, ...newPreviewUrls]);
+    setCarPhotos((prev) => [...prev, ...files]);
+    setPreviewPhotos((prev) => [...prev, ...files.map((file) => URL.createObjectURL(file))]);
   };
 
   const removePhoto = (index) => {
-    const newPhotos = [...carPhotos];
-    newPhotos.splice(index, 1);
-    setCarPhotos(newPhotos);
-
-    const newPreviews = [...previewPhotos];
-    URL.revokeObjectURL(newPreviews[index]);
-    newPreviews.splice(index, 1);
-    setPreviewPhotos(newPreviews);
+    setCarPhotos((prev) => prev.filter((_, i) => i !== index));
+    setPreviewPhotos((prev) => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const triggerFileInput = () => {
-    fileInputRef.current.click();
+    if (fileInputRef.current) fileInputRef.current.click();
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-    const formData = new FormData();
-    const formElements = e.target.elements;
-
-    // Add all form fields
-    for (let element of formElements) {
-      if (element.name && element.type !== "file") {
-        formData.append(element.name, element.value);
-      }
-    }
-
-    // Add all photos
-    carPhotos.forEach((photo) => {
-      formData.append("photos", photo);
-    });
-
-    // Here you would send formData to your backend
-    console.log("Form data:", Object.fromEntries(formData));
-
-    // Reset form
+  const resetForm = () => {
     setShowForm(false);
     setCarPhotos([]);
     setPreviewPhotos([]);
+    setMessage("");
+    setMessageType("");
+    setFormData({
+      brand: "",
+      model: "",
+      year: "",
+      registrationNumber: "",
+      color: "",
+      dailyPrice: "",
+      mileage: "",
+      fuelType: "",
+      transmission: "",
+      engineSize: "",
+      power: "",
+      doors: "",
+      seats: "",
+      trunkCapacity: "",
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+    setMessageType("");
+
+    const submitData = new FormData();
+
+    for (const key in formData) {
+      submitData.append(key, formData[key]);
+    }
+    carPhotos.forEach((photo) => submitData.append("photos", photo));
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://127.0.0.1:8000/voitures/add/", {
+        method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: submitData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setMessage("Erreur lors de l'ajout de la voiture: " + (errorData.error || "Erreur inconnue"));
+        setMessageType("error");
+        setLoading(false);
+        return;
+      }
+
+      await response.json();
+      setMessage("Voiture ajoutée avec succès !");
+      setMessageType("success");
+
+      resetForm();
+      fetchCars();
+    } catch (error) {
+      setMessage("Erreur réseau : " + error.message);
+      setMessageType("error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="carCards">
-      {/* Top Bar with Add Car Button */}
-      <div className="top-bar">
-        <button className="add-voiture" onClick={() => setShowForm(!showForm)}>
+    <Box sx={{ p: 3 }}>
+      {/* Bouton ajouter voiture */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
+        <Fab
+          variant="extended"
+          color="primary"
+          onClick={() => setShowForm(!showForm)}
+          sx={{
+            backgroundColor: "#f8bbd0",
+            "&:hover": { backgroundColor: "#e91e63" },
+          }}
+        >
+          <AddIcon sx={{ mr: 1 }} />
           {showForm ? "Fermer le formulaire" : "Ajouter une voiture"}
-        </button>
-      </div>
+        </Fab>
+      </Box>
 
-      {/* Add Car Modal */}
-      {showForm && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-top-band"></div>
-            <h3>Ajouter une voiture</h3>
+      {/* Formulaire ajout voiture */}
+      <Dialog
+        open={showForm}
+        onClose={() => !loading && resetForm()}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2, maxHeight: "90vh" } }}
+      >
+        <DialogTitle
+          sx={{
+            bgcolor: "#f8bbd0",
+            color: "white",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h6">Ajouter une voiture</Typography>
+          <IconButton onClick={resetForm} disabled={loading} sx={{ color: "white" }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
 
-            <form onSubmit={handleSubmit}>
-              {/* Photo Upload Section */}
-              <div className="form-row">
-                <div className="form-group photo-upload">
-                  <label>
-                    <strong>Photos de la voiture (max 5):</strong>
-                    <div className="photo-upload-container">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        multiple
-                        accept="image/*"
-                        onChange={handlePhotoUpload}
-                        style={{ display: "none" }}
+        <DialogContent sx={{ pt: 2 }}>
+          {message && (
+            <Alert severity={messageType} sx={{ mb: 2 }} onClose={() => setMessage("")}>
+              {message}
+            </Alert>
+          )}
+
+          <form id="car-form" onSubmit={handleSubmit}>
+            <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: "#f5f5f5" }}>
+              <Typography variant="subtitle1" gutterBottom>
+                <strong>Photos de la voiture (max 5)</strong>
+              </Typography>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                multiple
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                style={{ display: "none" }}
+              />
+
+              <Button
+                variant="outlined"
+                startIcon={<PhotoCameraIcon />}
+                onClick={triggerFileInput}
+                disabled={loading || carPhotos.length >= 5}
+                sx={{ mb: 2 }}
+              >
+                Ajouter des photos
+              </Button>
+
+              {previewPhotos.length > 0 && (
+                <ImageList cols={3} rowHeight={120} sx={{ mt: 1 }}>
+                  {previewPhotos.map((preview, index) => (
+                    <ImageListItem key={index}>
+                      <img
+                        src={preview}
+                        alt={`Preview ${index}`}
+                        style={{ width: "100%", height: "120px", objectFit: "cover" }}
                       />
-                      <button
-                        type="button"
-                        className="upload-btn"
-                        onClick={triggerFileInput}
-                      >
-                        <span>+ Ajouter des photos</span>
-                      </button>
-
-                      <div className="photo-preview-container">
-                        {previewPhotos.map((preview, index) => (
-                          <div key={index} className="photo-preview">
-                            <img src={preview} alt={`Preview ${index}`} />
-                            <button
-                              type="button"
-                              className="remove-photo-btn"
-                              onClick={() => removePhoto(index)}
-                              aria-label="Remove photo"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Car Details Form */}
-              <div className="form-grid">
-                {/* Row 1 - Brand and Model */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>
-                      <strong>Marque :</strong>
-                      <input type="text" name="brand" required />
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      <strong>Modèle :</strong>
-                      <input type="text" name="model" required />
-                    </label>
-                  </div>
-                </div>
-
-                {/* Row 2 - Year and License */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>
-                      <strong>Année :</strong>
-                      <input
-                        type="number"
-                        name="year"
-                        min="1900"
-                        max={new Date().getFullYear()}
-                        required
+                      <ImageListItemBar
+                        actionIcon={
+                          <IconButton
+                            onClick={() => removePhoto(index)}
+                            disabled={loading}
+                            sx={{ color: "white" }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        }
                       />
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      <strong>Immatriculation :</strong>
-                      <input type="text" name="license" required />
-                    </label>
-                  </div>
-                </div>
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              )}
+            </Paper>
 
-                {/* Row 3 - Color */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>
-                      <strong>Couleur :</strong>
-                      <input type="text" name="color" required />
-                    </label>
-                  </div>
-                </div>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Marque"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Modèle"
+                  name="model"
+                  value={formData.model}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Année"
+                  name="year"
+                  type="number"
+                  value={formData.year}
+                  onChange={handleInputChange}
+                  inputProps={{ min: 1900, max: new Date().getFullYear() }}
+                  required
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Immatriculation"
+                  name="registrationNumber"
+                  value={formData.registrationNumber}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Couleur"
+                  name="color"
+                  value={formData.color}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Prix / jour (€)"
+                  name="dailyPrice"
+                  type="number"
+                  value={formData.dailyPrice}
+                  onChange={handleInputChange}
+                  inputProps={{ min: 0, step: 0.01 }}
+                  required
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Kilométrage"
+                  name="mileage"
+                  type="number"
+                  value={formData.mileage}
+                  onChange={handleInputChange}
+                  inputProps={{ min: 0 }}
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth disabled={loading}>
+                  <InputLabel>Carburant</InputLabel>
+                  <Select
+                    name="fuelType"
+                    value={formData.fuelType}
+                    onChange={handleInputChange}
+                    label="Carburant"
+                  >
+                    <MenuItem value="">Sélectionner</MenuItem>
+                    <MenuItem value="Essence">Essence</MenuItem>
+                    <MenuItem value="Diesel">Diesel</MenuItem>
+                    <MenuItem value="Électrique">Électrique</MenuItem>
+                    <MenuItem value="Hybride">Hybride</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth disabled={loading}>
+                  <InputLabel>Transmission</InputLabel>
+                  <Select
+                    name="transmission"
+                    value={formData.transmission}
+                    onChange={handleInputChange}
+                    label="Transmission"
+                  >
+                    <MenuItem value="">Sélectionner</MenuItem>
+                    <MenuItem value="Automatique">Automatique</MenuItem>
+                    <MenuItem value="Manuelle">Manuelle</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Moteur (L)"
+                  name="engineSize"
+                  type="number"
+                  value={formData.engineSize}
+                  onChange={handleInputChange}
+                  inputProps={{ step: 0.1, min: 0 }}
+                  placeholder="ex: 2.0"
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Puissance (ch)"
+                  name="power"
+                  type="number"
+                  value={formData.power}
+                  onChange={handleInputChange}
+                  inputProps={{ min: 0 }}
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Portes"
+                  name="doors"
+                  type="number"
+                  value={formData.doors}
+                  onChange={handleInputChange}
+                  inputProps={{ min: 1, max: 6 }}
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Places"
+                  name="seats"
+                  type="number"
+                  value={formData.seats}
+                  onChange={handleInputChange}
+                  inputProps={{ min: 1, max: 9 }}
+                  disabled={loading}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Coffre (L)"
+                  name="trunkCapacity"
+                  type="number"
+                  value={formData.trunkCapacity}
+                  onChange={handleInputChange}
+                  inputProps={{ min: 0 }}
+                  disabled={loading}
+                />
+              </Grid>
+            </Grid>
+          </form>
+        </DialogContent>
 
-                {/* Row 4 - Price and Mileage */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>
-                      <strong>Prix / jour (€) :</strong>
-                      <input
-                        type="number"
-                        name="price"
-                        min="0"
-                        step="0.01"
-                        required
-                      />
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      <strong>Kilométrage :</strong>
-                      <input type="number" name="mileage" min="0" required />
-                    </label>
-                  </div>
-                </div>
+        <DialogActions sx={{ p: 2, bgcolor: "#f5f5f5" }}>
+          <Button onClick={resetForm} disabled={loading} sx={{ color: "#666" }}>
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            form="car-form"
+            variant="contained"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : <AddIcon />}
+            sx={{
+              backgroundColor: "#f8bbd0",
+              "&:hover": {
+                backgroundColor: "#e91e63",
+              },
+            }}
+          >
+            {loading ? "Enregistrement..." : "Enregistrer"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-                {/* Row 5 - Fuel and Transmission */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>
-                      <strong>Carburant :</strong>
-                      <select name="fuel" required>
-                        <option value="">Sélectionner</option>
-                        <option value="essence">Essence</option>
-                        <option value="diesel">Diesel</option>
-                        <option value="electrique">Électrique</option>
-                        <option value="hybride">Hybride</option>
-                      </select>
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      <strong>Transmission :</strong>
-                      <select name="transmission" required>
-                        <option value="">Sélectionner</option>
-                        <option value="automatique">Automatique</option>
-                        <option value="manuelle">Manuelle</option>
-                      </select>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Row 6 - Engine and Power */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>
-                      <strong>Moteur :</strong>
-                      <input type="text" name="engine" required />
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      <strong>Puissance (ch) :</strong>
-                      <input type="number" name="power" min="0" required />
-                    </label>
-                  </div>
-                </div>
-
-                {/* Row 7 - Doors and Seats */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>
-                      <strong>Portes :</strong>
-                      <input
-                        type="number"
-                        name="doors"
-                        min="1"
-                        max="6"
-                        required
-                      />
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      <strong>Places :</strong>
-                      <input
-                        type="number"
-                        name="seats"
-                        min="1"
-                        max="9"
-                        required
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                {/* Row 8 - Trunk */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>
-                      <strong>Coffre (L) :</strong>
-                      <input type="number" name="trunk" min="0" required />
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Form Actions */}
-              <div className="form-actions">
-                <button type="submit" className="confirm-btn">
-                  Enregistrer
-                </button>
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => {
-                    setShowForm(false);
-                    setCarPhotos([]);
-                    setPreviewPhotos([]);
-                  }}
-                >
-                  Fermer
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Cars List */}
-      <div className="cards">
-        <Card />
-      </div>
-    </div>
+      {/* Affichage voitures */}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 3 }}>
+        {loadingCars && <Typography>Chargement des voitures...</Typography>}
+        {errorCars && <Alert severity="error">{errorCars}</Alert>}
+        {!loadingCars && !errorCars && cars.length === 0 && (
+          <Typography>Aucune voiture disponible.</Typography>
+        )}
+        {cars.map((car) => (
+          <CarCard key={car._id || car.id || car.registrationNumber} car={car} />
+        ))}
+      </Box>
+    </Box>
   );
 };
 
