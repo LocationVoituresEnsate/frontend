@@ -130,7 +130,7 @@ const SidebarAdmin = () => {
             color: location.pathname === '/admin/manager' ? 'primary.main' : 'text.primary',
             bgcolor: location.pathname === '/admin/manager' ? `${theme.palette.primary.main}10` : 'transparent',
             '&:hover': {
-              bgcolor: location.pathname === '/admin/manager' ? `${theme.palette.primary.main}20` : 'action.hover'
+              bgcolor: location.pathname === '/admin/manager' ? `${theme.palette.primary.main+'10'}` : 'action.hover'
             }
           }}
         >
@@ -150,11 +150,12 @@ const SidebarAdmin = () => {
         <Divider sx={{ my: 1 }} />
         <ListItem
           button
+          component={NavLink}
           onClick={handleLogout}
           sx={{
             borderRadius: 1,
             color: 'text.primary',
-            '&:hover': { bgcolor: theme.palette.action.hover }
+            '&:hover': { bgcolor: theme.palette.primary.main+'10' }
           }}
         >
           <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
