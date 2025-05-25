@@ -300,49 +300,55 @@ const ReservationsManager = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    setMessageType("");
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
+  setMessageType("");
 
-    const submitData = new FormData();
+  const submitData = new FormData();
 
-    for (const key in formData) {
-      submitData.append(key, formData[key]);
-    }
-    carPhotos.forEach((photo) => submitData.append("photos", photo));
+  // Ajout des champs texte
+  Object.entries(formData).forEach(([key, value]) => {
+    submitData.append(key, value);
+  });
 
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://127.0.0.1:8000/voitures/add/", {
-        method: "POST",
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: submitData,
-      });
+  // Ajout des photos (fichiers)
+  carPhotos.forEach((photo) => submitData.append("photos", photo));
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setMessage("Erreur lors de l'ajout de la voiture: " + (errorData.error || "Erreur inconnue"));
-        setMessageType("error");
-        setLoading(false);
-        return;
-      }
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch("http://127.0.0.1:8000/voitures/add/", {
+      method: "POST",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        // Ne pas mettre 'Content-Type' ici, le navigateur gère automatiquement pour FormData
+      },
+      body: submitData,
+    });
 
-      await response.json();
-      setMessage("Voiture ajoutée avec succès !");
-      setMessageType("success");
-
-      resetForm();
-      fetchCars();
-    } catch (error) {
-      setMessage("Erreur réseau : " + error.message);
+    if (!response.ok) {
+      const errorData = await response.json();
+      setMessage(
+        "Erreur lors de l'ajout de la voiture: " + (errorData.error || "Erreur inconnue")
+      );
       setMessageType("error");
-    } finally {
       setLoading(false);
+      return;
     }
-  };
+
+    await response.json();
+    setMessage("Voiture ajoutée avec succès !");
+    setMessageType("success");
+
+    resetForm();
+    fetchCars();
+  } catch (error) {
+    setMessage("Erreur réseau : " + error.message);
+    setMessageType("error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Box sx={{ p: 3 }}>
