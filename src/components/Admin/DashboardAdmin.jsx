@@ -1,43 +1,77 @@
-import React, { useState } from 'react';
-import {
-  Box, Paper, Typography, Grid, LinearProgress, Avatar, Tooltip
-} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Paper, Typography, Grid, LinearProgress, Avatar, Tooltip } from '@mui/material';
 import {
   People as PeopleIcon,
   CarRental as CarIcon,
   Event as EventIcon,
   AttachMoney as MoneyIcon,
   Refresh as RefreshIcon,
-  Pending as PendingIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
 } from '@mui/icons-material';
 
 const DashboardAdminStats = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [managerCount, setManagerCount] = useState(0); // Pour stocker le nombre de managers
+
+  // Récupérer le nombre de managers depuis l'API
+  const fetchManagerCount = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/manager/count/');
+      if (response.ok) {
+        const data = await response.json();
+        setManagerCount(data.manager_count); // Met à jour le nombre de managers
+      } else {
+        console.error('Erreur lors de la récupération du nombre de managers');
+      }
+    } catch (error) {
+      console.error('Erreur réseau', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const [clientCount, setClientCount] = useState(0);
+
+
+  const fetchClientCount = async () => {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/customer/count/');
+    if (response.ok) {
+      const data = await response.json();
+      setClientCount(data.client_count);
+    } else {
+      console.error('Erreur lors de la récupération du nombre de clients');
+    }
+  } catch (error) {
+    console.error('Erreur réseau', error);
+  }
+};
+
+
+  // Effectuer la récupération des données au chargement du composant
+  useEffect(() => {
+    fetchManagerCount();
+    fetchClientCount();
+  }, []);
 
   const handleRefresh = () => {
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 1500);
+    setTimeout(() => {
+      fetchManagerCount();
+      fetchClientCount();
+       // Rafraîchir le nombre de managers
+      setIsLoading(false);
+    }, 1500);
   };
 
   // Statistiques globales
   const stats = [
-    { id: 1, title: 'Managers actifs', value: '12', icon: <PeopleIcon />, color: { bg: '#e3f2fd', text: '#1976d2' } },
+    { id: 1, title: 'Managers', value: managerCount, icon: <PeopleIcon />, color: { bg: '#e3f2fd', text: '#1976d2' } },
     { id: 2, title: 'Total voitures', value: '350', icon: <CarIcon />, color: { bg: '#e8f5e9', text: '#2e7d32' } },
     { id: 3, title: 'Réservations totales', value: '4800', icon: <EventIcon />, color: { bg: '#f3e5f5', text: '#7b1fa2' } },
     { id: 4, title: 'Revenus totaux', value: '125K €', icon: <MoneyIcon />, color: { bg: '#fff8e1', text: '#ff8f00' } },
+    { id: 5, title: 'Clients', value: clientCount, icon: <PeopleIcon />, color: { bg: '#e3f2fd', text: '#1976d2' } }
   ];
-
-  // Données graphiques exemples
-  const containerHeight = 280;
-  const availableHeight = 200;
-
-  const monthlyRevenue = [2300, 4500, 2800, 6700, 5200, 7200, 4300];
-  const weeklyBookings = [15, 25, 12, 30, 22, 33, 18];
-
-  const maxMonthlyRevenue = Math.max(...monthlyRevenue);
-  const maxWeeklyBookings = Math.max(...weeklyBookings);
 
   return (
     <Box sx={{ p: 3, pb: 5, bgcolor: 'grey.50', minHeight: '100vh', fontFamily: 'Roboto, sans-serif' }}>
@@ -105,8 +139,6 @@ const DashboardAdminStats = () => {
           </Grid>
         ))}
       </Grid>
-
-      
     </Box>
   );
 };
