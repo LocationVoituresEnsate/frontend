@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Paper, 
@@ -24,7 +24,7 @@ import {
   Assignment as AssignmentIcon,
   ManageAccounts as ManageAccountsIcon,
   Person as PersonIcon,
-  
+  Logout as LogoutIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon
 } from '@mui/icons-material';
@@ -32,6 +32,7 @@ import {
 const SidebarManager = () => {
   const theme = useTheme();
   const location = useLocation();
+  const navigate = useNavigate(); // Utilisation de useNavigate pour rediriger
   const [openSections, setOpenSections] = useState({
     gestion: true,
     administration: false  // Administration section fermée par défaut
@@ -42,6 +43,34 @@ const SidebarManager = () => {
       ...prev,
       [section]: !prev[section]
     }));
+  };
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      console.error('Aucun token trouvé, impossible de se déconnecter.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/auth/logout/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json', // parfois nécessaire même si pas de body
+        },
+      });
+
+      if (response.ok) {
+        localStorage.clear(); // Effacer le token et les données utilisateur
+        navigate('/login');  // Rediriger vers la page de connexion
+      } else {
+        console.error('Erreur lors de la déconnexion', await response.text());
+      }
+    } catch (error) {
+      console.error('Erreur réseau lors de la déconnexion', error);
+    }
   };
 
   return (
@@ -70,8 +99,6 @@ const SidebarManager = () => {
           >
             <PersonIcon fontSize="small" />
           </Avatar>
-          
-         
         </Box>
         
         <Typography variant="body2" fontWeight="bold" sx={{ mt: 0.5, color: 'text.primary' }}>
@@ -306,6 +333,27 @@ const SidebarManager = () => {
             </ListItem>
           </Collapse>
         </Box>
+
+        <Divider sx={{ my: 1 }} />
+        
+        {/* Logout */}
+        <ListItem
+          button
+          onClick={handleLogout}
+          sx={{
+            borderRadius: 1,
+            color: 'text.primary',
+            '&:hover': { bgcolor: theme.palette.action.hover }
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            primary="Déconnexion"
+            primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 400 }}
+          />
+        </ListItem>
       </List>
       
       {/* Footer très compact */}

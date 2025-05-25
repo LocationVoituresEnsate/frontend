@@ -9,9 +9,9 @@ import {
   Close as CloseIcon
 } from '@mui/icons-material';
 
-const roles = [
-  { value: 'manager', label: 'Manager' }
-];
+// const roles = [
+//   { value: 'manager', label: 'Manager' }
+// ];
 
 const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
   const theme = useTheme();
@@ -19,7 +19,7 @@ const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
   const [formData, setFormData] = useState(
     initialData || {
       username: '',
-      role: 'manager',
+      // role: 'manager',
       password: '',
       first_name: '',
       last_name: '',
@@ -31,12 +31,16 @@ const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({...formData, [name]: value});
     if (!touched[name]) setTouched({...touched, [name]: true});
     if (errors[name]) setErrors({...errors, [name]: ''});
+    setError(null);
+    setSuccessMessage(null);
   };
 
   const handleBlur = (e) => {
@@ -50,8 +54,8 @@ const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
     switch(name) {
       case 'username':
         return !value.trim() ? 'Le nom d’utilisateur est requis' : '';
-      case 'role':
-        return !value.trim() ? 'Le rôle est requis' : '';
+      // case 'role':
+      //   return !value.trim() ? 'Le rôle est requis' : '';
       case 'password':
         if (!value.trim()) return 'Le mot de passe est requis';
         if (value.length < 6) return 'Le mot de passe doit contenir au moins 6 caractères';
@@ -82,7 +86,7 @@ const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const allTouched = {};
     Object.keys(formData).forEach(f => allTouched[f] = true);
@@ -91,25 +95,32 @@ const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setSuccessMessage(null);
       return;
     }
 
-    onAddManager(formData);
-
-    if (!initialData) {
-      setFormData({
-        username: '',
-        role: 'manager',
-        password: '',
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone_number: '',
-        address: '',
-      });
-      setTouched({});
+    try {
+      await onAddManager(formData);
+      setSuccessMessage('Manager créé avec succès !');
+      setError(null);
+      if (!initialData) {
+        setFormData({
+          username: '',
+          // role: 'manager',
+          password: '',
+          first_name: '',
+          last_name: '',
+          email: '',
+          phone_number: '',
+          address: '',
+        });
+        setTouched({});
+      }
+      setErrors({});
+    } catch (err) {
+      setError(err.message || 'Erreur lors de la création du manager');
+      setSuccessMessage(null);
     }
-    setErrors({});
   };
 
   return (
@@ -144,9 +155,21 @@ const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
 
         <Divider sx={{ mb: 3 }} />
 
+        {/* Messages */}
+        {successMessage && (
+          <Box mb={2} p={2} bgcolor="success.light" color="success.dark" borderRadius={1}>
+            {successMessage}
+          </Box>
+        )}
+
+        {error && (
+          <Box mb={2} p={2} bgcolor="error.light" color="error.dark" borderRadius={1}>
+            {error}
+          </Box>
+        )}
+
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Grid container spacing={3}>
-
             {/* Username */}
             <Grid item xs={12} md={6}>
               <TextField
@@ -165,7 +188,7 @@ const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
             </Grid>
 
             {/* Role */}
-            <Grid item xs={12} md={6}>
+            {/* <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 select
@@ -186,7 +209,7 @@ const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
                   </MenuItem>
                 ))}
               </TextField>
-            </Grid>
+            </Grid> */}
 
             {/* Password */}
             <Grid item xs={12} md={6}>
@@ -312,7 +335,6 @@ const AddManagerForm = ({ onAddManager, initialData = null, onCancel }) => {
                 sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: 'primary.main' }}}}
               />
             </Grid>
-
           </Grid>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
