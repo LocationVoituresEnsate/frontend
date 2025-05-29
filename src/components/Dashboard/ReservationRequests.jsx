@@ -44,7 +44,6 @@ const ReservationRequests = () => {
   const [processing, setProcessing] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  // Get auth headers like ClientManager
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
     return {
@@ -53,7 +52,6 @@ const ReservationRequests = () => {
     };
   };
 
-  // Fetch all reservations
   const fetchReservations = () => {
     setLoading(true);
     setError(null);
@@ -69,23 +67,21 @@ const ReservationRequests = () => {
       })
       .then((data) => {
         const reservationsList = data.reservations || [];
-        
-        // Transform API data to component format
+
         const transformedData = reservationsList.map(reservation => ({
           id: reservation._id,
-          clientId: reservation.client_id,
-          nom: 'N/A', // These would come from client data in a real scenario
-          prenom: 'N/A', // You might need to modify your API to include client details
-          telephone: 'N/A',
-          matricule: reservation.voiture_id, // Using voiture_id as matricule for now
-          modele: 'N/A', // This would come from voiture data
+          nom: reservation.client?.first_name || 'N/A',
+          prenom: reservation.client?.last_name || 'N/A',
+          license: reservation.client?.license_number || 'N/A',
+          clientId: reservation.client?._id || 'N/A',
+          matricule: reservation.registrationNumber || 'N/A',
           statut: mapStatus(reservation.status),
           startDate: reservation.start_date,
           endDate: reservation.end_date,
           totalPrice: reservation.total_price,
           dailyPrice: reservation.daily_price,
           createdAt: reservation.created_at,
-          originalData: reservation // Keep original data for debugging
+          originalData: reservation
         }));
 
         setReservations(transformedData);
@@ -97,7 +93,6 @@ const ReservationRequests = () => {
       });
   };
 
-  // Accept reservation
   const handleAcceptReservation = async (reservationId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/reservations/accept_reservation/${reservationId}`, {
@@ -110,7 +105,7 @@ const ReservationRequests = () => {
       if (response.ok) {
         setSuccessMessage('Réservation acceptée avec succès !');
         setError(null);
-        fetchReservations(); // Refresh data
+        fetchReservations();
         return data;
       } else {
         setError(data.error || 'Erreur lors de l\'acceptation de la réservation');
@@ -124,7 +119,6 @@ const ReservationRequests = () => {
     }
   };
 
-  // Decline reservation
   const handleDeclineReservation = async (reservationId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/reservations/decline_reservation/${reservationId}`, {
@@ -137,7 +131,7 @@ const ReservationRequests = () => {
       if (response.ok) {
         setSuccessMessage('Réservation refusée avec succès !');
         setError(null);
-        fetchReservations(); // Refresh data
+        fetchReservations();
         return data;
       } else {
         setError(data.error || 'Erreur lors du refus de la réservation');
@@ -151,19 +145,16 @@ const ReservationRequests = () => {
     }
   };
 
-  // Refresh function like ClientManager
   const handleRefresh = () => {
     fetchReservations();
     setSuccessMessage(null);
     setError(null);
   };
 
-  // Fetch reservations on component mount
   useEffect(() => {
     fetchReservations();
   }, []);
 
-  // Map API status to display status
   const mapStatus = (apiStatus) => {
     switch (apiStatus) {
       case 'pending':
@@ -197,20 +188,14 @@ const ReservationRequests = () => {
       if (action === 'accept') {
         await handleAcceptReservation(selected.id);
         showSnackbar('Réservation acceptée avec succès', 'success');
-        // Update local state immediately for better UX
         setReservations(reservations.map(r =>
-          r.id === selected.id
-            ? { ...r, statut: 'acceptee' }
-            : r
+          r.id === selected.id ? { ...r, statut: 'acceptee' } : r
         ));
       } else {
         await handleDeclineReservation(selected.id);
         showSnackbar('Réservation refusée avec succès', 'success');
-        // Update local state immediately for better UX
         setReservations(reservations.map(r =>
-          r.id === selected.id
-            ? { ...r, statut: 'refusee' }
-            : r
+          r.id === selected.id ? { ...r, statut: 'refusee' } : r
         ));
       }
 
@@ -231,7 +216,7 @@ const ReservationRequests = () => {
         year: 'numeric'
       });
     } catch (error) {
-      return dateString; // Return original if parsing fails
+      return dateString;
     }
   };
 
@@ -256,28 +241,20 @@ const ReservationRequests = () => {
 
   return (
     <div className="w-full px-4 py-6">
-      {/* Refresh button like ClientManager */}
       <div className="flex justify-end mb-4">
         <Avatar
           sx={{ bgcolor: 'primary.main', cursor: 'pointer', boxShadow: 3, width: 40, height: 40 }}
           onClick={handleRefresh}
-          title="Rafraîchir"
         >
           <RefreshIcon />
         </Avatar>
       </div>
 
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-text">
           Gestion des réservations ({reservations.length})
         </h1>
       </div>
-
-      {/* Error and Success Messages like ClientManager */}
-      {loading && <p>Chargement des réservations...</p>}
-      {error && <p style={{ color: 'red' }}>Erreur : {error}</p>}
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
 
       {error && (
         <Paper elevation={2} sx={{ p: 3, mb: 2 }}>
@@ -294,29 +271,19 @@ const ReservationRequests = () => {
         </Paper>
       )}
 
-      <Paper
-        elevation={2}
-        sx={{
-          p: 3,
-          borderRadius: 2,
-          boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-          width: '100%',
-          overflowX: 'auto'
-        }}
-      >
+      <Paper elevation={2} sx={{ p: 3, borderRadius: 2, boxShadow: '0 4px 6px rgba(0,0,0,0.05)', width: '100%', overflowX: 'auto' }}>
         {reservations.length === 0 ? (
-          <Alert severity="info">
-            Aucune réservation trouvée.
-          </Alert>
+          <Alert severity="info">Aucune réservation trouvée.</Alert>
         ) : (
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
                   {[
-                    'ID Réservation',
-                    'ID Client',
-                    'ID Voiture',
+                    'Nom',
+                    'Prénom',
+                    'Numéro Permis',
+                    'Matricule',
                     'Date début',
                     'Date fin',
                     'Prix journalier',
@@ -352,27 +319,16 @@ const ReservationRequests = () => {
                       transition: 'background-color 0.2s'
                     }}
                   >
-                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                      {res.id}
-                    </TableCell>
-                    <TableCell sx={{ fontFamily: 'monospace' }}>
-                      {res.clientId}
-                    </TableCell>
-                    <TableCell sx={{ fontFamily: 'monospace' }}>
-                      {res.matricule}
-                    </TableCell>
+                    <TableCell>{res.nom}</TableCell>
+                    <TableCell>{res.prenom}</TableCell>
+                    <TableCell>{res.license}</TableCell>
+                    <TableCell>{res.matricule}</TableCell>
                     <TableCell>{formatDate(res.startDate)}</TableCell>
                     <TableCell>{formatDate(res.endDate)}</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>
-                      {res.dailyPrice ? `${res.dailyPrice} DH` : 'N/A'}
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', color: theme.palette.success.main }}>
-                      {res.totalPrice ? `${res.totalPrice} DH` : 'N/A'}
-                    </TableCell>
+                    <TableCell>{res.dailyPrice ? `${res.dailyPrice} DH` : 'N/A'}</TableCell>
+                    <TableCell>{res.totalPrice ? `${res.totalPrice} DH` : 'N/A'}</TableCell>
                     <TableCell>{getChip(res.statut)}</TableCell>
-                    <TableCell sx={{ fontSize: '0.8rem' }}>
-                      {formatDate(res.createdAt)}
-                    </TableCell>
+                    <TableCell>{formatDate(res.createdAt)}</TableCell>
                     <TableCell align="center">
                       {res.statut === 'en_attente' ? (
                         <>
@@ -382,13 +338,6 @@ const ReservationRequests = () => {
                               color="success"
                               onClick={() => handleAction(res, 'accept')}
                               disabled={processing}
-                              sx={{
-                                '&:hover': {
-                                  transform: 'scale(1.1)',
-                                  bgcolor: 'rgba(56,142,60,0.1)'
-                                },
-                                transition: 'all 0.2s'
-                              }}
                             >
                               <AcceptIcon />
                             </IconButton>
@@ -399,13 +348,6 @@ const ReservationRequests = () => {
                               color="error"
                               onClick={() => handleAction(res, 'reject')}
                               disabled={processing}
-                              sx={{
-                                '&:hover': {
-                                  transform: 'scale(1.1)',
-                                  bgcolor: 'rgba(211,47,47,0.1)'
-                                },
-                                transition: 'all 0.2s'
-                              }}
                             >
                               <RejectIcon />
                             </IconButton>
@@ -423,36 +365,17 @@ const ReservationRequests = () => {
             </Table>
           </TableContainer>
         )}
-
-        {/* Debug info - remove in production */}
-        {process.env.NODE_ENV === 'development' && reservations.length > 0 && (
-          <Box mt={2}>
-            <Typography variant="caption" color="text.secondary">
-              Debug: Première réservation reçue:
-            </Typography>
-            <pre style={{ fontSize: '0.7rem', backgroundColor: '#f5f5f5', padding: '8px', overflow: 'auto' }}>
-              {JSON.stringify(reservations[0]?.originalData, null, 2)}
-            </pre>
-          </Box>
-        )}
       </Paper>
 
-      {/* Confirmation Dialog */}
-      <Dialog
-        open={openDialog}
-        onClose={() => !processing && setOpenDialog(false)}
-      >
-        <DialogTitle>
-          {action === 'accept' ? 'Accepter la réservation' : 'Refuser la réservation'}
-        </DialogTitle>
+      <Dialog open={openDialog} onClose={() => !processing && setOpenDialog(false)}>
+        <DialogTitle>{action === 'accept' ? 'Accepter la réservation' : 'Refuser la réservation'}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Êtes-vous sûr de vouloir{' '}
-            {action === 'accept' ? 'accepter' : 'refuser'} cette réservation ?
+            Êtes-vous sûr de vouloir {action === 'accept' ? 'accepter' : 'refuser'} cette réservation ?
             {selected && (
-              <Box component="div" sx={{ mt: 2 }}>
+              <Box sx={{ mt: 2 }}>
                 <strong>ID:</strong> {selected.id}<br />
-                <strong>Client:</strong> {selected.clientId}<br />
+                <strong>Client:</strong> {selected.nom} {selected.prenom}<br />
                 <strong>Période:</strong> {formatDate(selected.startDate)} - {formatDate(selected.endDate)}<br />
                 <strong>Prix total:</strong> {selected.totalPrice} DH
               </Box>
@@ -460,9 +383,7 @@ const ReservationRequests = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} disabled={processing}>
-            Annuler
-          </Button>
+          <Button onClick={() => setOpenDialog(false)} disabled={processing}>Annuler</Button>
           <Button
             onClick={confirm}
             variant="contained"
@@ -475,7 +396,6 @@ const ReservationRequests = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
