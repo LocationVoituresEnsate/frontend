@@ -1,279 +1,265 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Card,
-  CardMedia,
-  CardContent,
-  Typography,
-  Button,
-  IconButton,
   Box,
-  Modal,
-  Select,
-  MenuItem,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Typography,
+  Paper,
   FormControl,
   InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import InfoIcon from "@mui/icons-material/Info";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import Image from "../assets/porsche-rouge.png";
 
-const modalStyle = {
-  position: "fixed",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  bgcolor: "background.paper",
-  boxShadow: 24,
-  borderRadius: 2,
-  p: 3,
-  width: 320,
-  maxWidth: "90vw",
-};
+const DefaultCarImage = "https://via.placeholder.com/300x150?text=No+Image";
 
-const CarCard = () => {
+const CarCard = ({ car }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [showReserveForm, setShowReserveForm] = useState(false);
-
+  const [clients, setClients] = useState([]);
   const [client, setClient] = useState("");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const car = {
-    brand: "Volkswagen",
-    dailyPrice: 5.0,
-    oldPrice: 6.5,
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-    imageUrl: Image,
-  };
-
-  const clients = ["Client A", "Client B", "Client C"];
-
-  const bookedRanges = [
-    { start: new Date(2025, 4, 20), end: new Date(2025, 4, 22) },
-    { start: new Date(2025, 4, 28), end: new Date(2025, 4, 30) },
-  ];
-
-  const getBookedDates = () => {
-    let dates = [];
-    bookedRanges.forEach(({ start, end }) => {
-      let curr = new Date(start);
-      while (curr <= end) {
-        dates.push(new Date(curr));
-        curr.setDate(curr.getDate() + 1);
+  useEffect(() => {
+    const fetchClients = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://127.0.0.1:8000/customer/", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok)
+          throw new Error("Erreur lors du chargement des clients");
+        const data = await response.json();
+        console.log("Clients récupérés :", data);
+        setClients(Array.isArray(data) ? data : data.clients || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-    });
-    return dates;
-  };
+    };
+    fetchClients();
+  }, []);
 
-  const bookedDates = getBookedDates();
+  const handleReservationSubmit = async (e) => {
+    e.preventDefault();
 
-  const setDateRange = (dates) => {
-    const [start, end] = dates;
-    setStartDate(start);
-    setEndDate(end);
+    if (!client || !startDate || !endDate) {
+      alert("Veuillez remplir tous les champs");
+      return;
+    }
+
+    if (new Date(endDate) < new Date(startDate)) {
+      alert("La date de fin doit être supérieure à la date de début");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+      const reservationData = {
+        client_id: client,
+        voiture_id: car._id,
+        start_date: startDate,
+        end_date: endDate,
+      };
+
+      console.log("Données envoyées:", reservationData);
+
+      const response = await fetch("http://127.0.0.1:8000/reservations/add/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(reservationData),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || "Erreur lors de la réservation");
+      }
+
+      const data = await response.json();
+      alert(`Réservation confirmée ! ID: ${data.id || "N/A"}`);
+
+      setShowReserveForm(false);
+      setClient("");
+      setStartDate("");
+      setEndDate("");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <>
-      <Card
-        sx={{
-          width: 300,
-          bgcolor: "#f9f0f3",
-          borderRadius: 2,
-          boxShadow: 3,
-          position: "relative",
-          p: 2,
+    <Box
+      sx={{
+        border: "1px solid #ccc",
+        borderRadius: 2,
+        width: 320,
+        m: 1,
+        p: 1.5,
+        boxShadow: 1,
+      }}
+    >
+      <img
+        src={car.imageUrl || DefaultCarImage}
+        alt={`${car.brand || "Marque inconnue"} ${car.model || ""}`}
+        style={{
+          width: "100%",
+          height: 150,
+          objectFit: "cover",
+          borderRadius: 8,
         }}
+      />
+      <Typography variant="body2" sx={{ mt: 1 }}>
+        ID Voiture: {car.id ?? "inconnu"}
+      </Typography>
+      <Typography variant="h6" mt={1}>
+        {car.brand || "Marque inconnue"} {car.model || ""}
+      </Typography>
+      <Typography variant="subtitle1" color="text.secondary">
+        {car.dailyPrice !== undefined
+          ? `${parseFloat(car.dailyPrice).toFixed(2)} € / jour`
+          : "Prix non disponible"}
+      </Typography>
+
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ mt: 1 }}
+        onClick={() => setShowReserveForm(true)}
       >
-        {/* Delete icon top right */}
-        <IconButton
-          aria-label="delete"
-          sx={{ position: "absolute", top: 8, right: 8, color: "#d6a4a4" }}
-        >
-          <DeleteIcon />
-        </IconButton>
+        Réserver
+      </Button>
+      <Button
+        variant="outlined"
+        sx={{ mt: 1, ml: 1 }}
+        onClick={() => setShowInfo(!showInfo)}
+      >
+        {showInfo ? "Cacher Infos" : "Voir Infos"}
+      </Button>
 
-        {/* Car image */}
-        <CardMedia
-          component="img"
-          height="160"
-          image={car.imageUrl}
-          alt={car.brand}
-          sx={{ borderRadius: 2, objectFit: "cover" }}
-        />
-
-        {/* Content */}
-        <CardContent sx={{ pt: 2, pb: 1 }}>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ fontWeight: "bold", color: "#5a2612" }}
-          >
-            {car.brand}
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-            <Typography
-              variant="h6"
-              sx={{ fontWeight: "bold", color: "#3c1a00" }}
-            >
-              ${car.dailyPrice.toFixed(2)}
+      {showInfo && (
+        <Paper sx={{ mt: 2, p: 2, bgcolor: "#f9f9f9" }}>
+          {[
+            { label: "Année", value: car.year },
+            { label: "Immatriculation", value: car.registrationNumber },
+            { label: "Couleur", value: car.color },
+            { label: "Kilométrage", value: `${car.mileage} km` },
+            { label: "Carburant", value: car.fuelType },
+            { label: "Transmission", value: car.transmission },
+            { label: "Moteur", value: `${car.engineSize} L` },
+            { label: "Puissance", value: `${car.power} ch` },
+            { label: "Portes", value: car.doors },
+            { label: "Places", value: car.seats },
+            { label: "Coffre", value: `${car.trunkCapacity} L` },
+          ].map(({ label, value }) => (
+            <Typography variant="body2" key={label}>
+              <strong>{label} :</strong> {value ?? "N/A"}
             </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#bbb",
-                textDecoration: "line-through",
-                ml: 1,
-              }}
-            >
-              ${car.oldPrice.toFixed(2)}
-            </Typography>
-          </Box>
-          <Typography
-            variant="body2"
-            color="#432a1b"
-            sx={{ mb: 2, minHeight: 44 /* pour aligner bouton */ }}
-          >
-            {car.description}
-          </Typography>
+          ))}
+        </Paper>
+      )}
 
-          <Button
-            variant="outlined"
-            fullWidth
-            sx={{
-              borderColor: "#5a2612",
-              color: "#5a2612",
-              fontWeight: "bold",
-              borderRadius: 20,
-              "&:hover": {
-                backgroundColor: "#5a2612",
-                color: "#fff",
-                borderColor: "#5a2612",
-              },
-            }}
-            onClick={() => setShowReserveForm(true)}
-          >
-            RESERVER
-          </Button>
-        </CardContent>
-
-        {/* Info icon bottom right */}
-        <IconButton
-          aria-label="info"
-          onClick={() => setShowInfo(true)}
-          sx={{
-            position: "absolute",
-            bottom: 12,
-            right: 12,
-            color: "#d6a4a4",
-          }}
-        >
-          <InfoIcon />
-        </IconButton>
-      </Card>
-
-      {/* Modal Infos */}
-      <Modal open={showInfo} onClose={() => setShowInfo(false)}>
-        <Box sx={modalStyle}>
-          <Typography variant="h6" component="h3" mb={2}>
-            Informations Complètes
-          </Typography>
-          <Typography variant="body2" mb={3}>
-            {/* Exemple d'infos, adapte comme tu veux */}
-            Marque: Volkswagen
-            <br />
-            Modèle: Passat
-            <br />
-            Année: 2022
-            <br />
-            Immatriculation: AB-123-CD
-            <br />
-            Couleur: Rouge
-            <br />
-            Prix / jour: $75
-            <br />
-            Kilométrage: 45000 km
-            <br />
-            Carburant: Essence
-            <br />
-            Transmission: Automatique
-            <br />
-            Moteur: 2 L
-            <br />
-            Puissance: 150 ch
-            <br />
-            Portes: 4
-            <br />
-            Places: 5
-            <br />
-            Coffre: 450 L
-          </Typography>
-          <Button variant="contained" onClick={() => setShowInfo(false)} fullWidth>
-            Fermer
-          </Button>
-        </Box>
-      </Modal>
-
-      {/* Modal Réservation */}
-      <Modal open={showReserveForm} onClose={() => setShowReserveForm(false)}>
-        <Box sx={modalStyle}>
-          <Typography variant="h6" component="h3" mb={2}>
-            Réserver cette voiture
-          </Typography>
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            style={{ display: "flex", flexDirection: "column", gap: 16 }}
-          >
-            <FormControl fullWidth required>
-              <InputLabel id="client-select-label">Choisir un client</InputLabel>
-              <Select
-                labelId="client-select-label"
-                value={client}
-                label="Choisir un client"
-                onChange={(e) => setClient(e.target.value)}
-              >
-                <MenuItem value="">
-                  <em>-- Sélectionner --</em>
-                </MenuItem>
-                {clients.map((c) => (
-                  <MenuItem key={c} value={c}>
-                    {c}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <DatePicker
-              selectsRange
-              startDate={startDate}
-              endDate={endDate}
-              onChange={setDateRange}
-              excludeDates={bookedDates}
-              minDate={new Date()}
-              inline
-            />
-
-            <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-              <Button
-                variant="contained"
-                type="submit"
-                disabled={!client || !startDate || !endDate}
-              >
-                Confirmer
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => setShowReserveForm(false)}
-              >
-                Annuler
-              </Button>
+      <Dialog
+        open={showReserveForm}
+        onClose={() => setShowReserveForm(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2 } }}
+      >
+        <DialogTitle>Réserver la voiture</DialogTitle>
+        <DialogContent>
+          {loading ? (
+            <Box display="flex" justifyContent="center" my={3}>
+              <CircularProgress />
             </Box>
-          </form>
-        </Box>
-      </Modal>
-    </>
+          ) : error ? (
+            <Alert severity="error">{error}</Alert>
+          ) : (
+            <form onSubmit={handleReservationSubmit}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel id="client-select-label">Client</InputLabel>
+                <Select
+                  labelId="client-select-label"
+                  id="client-select"
+                  value={client !== undefined && client !== null ? client : ""}
+                  label="Client"
+                  onChange={(e) => setClient(e.target.value)}
+                  required
+                >
+                  <MenuItem value="">
+                    <em>-- Sélectionner --</em>
+                  </MenuItem>
+                  {clients && clients.length > 0 ? (
+                    clients.map((c) => (
+                      <MenuItem key={c.client_id} value={String(c.client_id)}>
+                        {c.license_number ||
+                          `${c.first_name} ${c.last_name}` ||
+                          "Client"}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>Aucun client trouvé</MenuItem>
+                  )}
+                </Select>
+              </FormControl>
+
+              <TextField
+                type="date"
+                label="Date de début"
+                fullWidth
+                required
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                sx={{ mb: 2 }}
+                InputLabelProps={{ shrink: true }}
+              />
+
+              <TextField
+                type="date"
+                label="Date de fin"
+                fullWidth
+                required
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                sx={{ mb: 2 }}
+                InputLabelProps={{ shrink: true }}
+              />
+
+              <DialogActions>
+                <Button onClick={() => setShowReserveForm(false)}>
+                  Annuler
+                </Button>
+                <Button type="submit" variant="contained">
+                  Confirmer
+                </Button>
+              </DialogActions>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+    </Box>
   );
 };
 
