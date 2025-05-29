@@ -17,6 +17,9 @@ import DashboardManager from './components/Dashboard/DashboardManager';
 import DashboardAdmin from './components/Admin/DashboardAdmin';
 import ClientManager from './components/Dashboard/ClientsManager';
 import ReservationRequests from './components/Dashboard/ReservationRequests';
+import AdminRoute from './AdminRoute';
+import ManagerRoute from './ManagerRoute';
+
 
 // Thème Material-UI personnalisé
 const theme = createTheme({
@@ -178,11 +181,8 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route 
             path="/services" 
-            element={
-              <PlaceholderPage 
-                title="Services" 
-                description="Cette section détaillera tous nos services de location de véhicules. Page en cours de développement."
-              />
+            element={<PlaceholderPage title="Services" description="Cette section détaillera tous nos services de location de véhicules. Page en cours de développement."
+/>
             } 
           />
           <Route 
@@ -210,38 +210,43 @@ const App = () => {
         <Route path="/login" element={<LoginForm />} />
         
         {/* Routes du dashboard - sans navbar ni footer */}
-        <Route path="/manager" element={<ManagerLayout />}>
-          <Route index element={<DashboardManager />} />
-          <Route path="clients" element={<ClientManager />} />
-          <Route path="voitures" element={<ReservationRequests/>} />
-                  <Route path="reservations" element={<ReservationsManager/>} />
+      
 
-          <Route 
-            path="rapports" 
-            element={
-              <Box sx={{ p: 3 }}>
-                <h1 style={{ color: '#e91e63' }}>Rapports et Analyses</h1>
-                <p>Module de reporting et d'analyse des performances en cours de développement.</p>
-              </Box>
-            } 
-          />
-          <Route 
-            path="parametres" 
-            element={
-              <Box sx={{ p: 3 }}>
-                <h1 style={{ color: '#e91e63' }}>Paramètres</h1>
-                <p>Configuration et paramètres de l'application en cours de développement.</p>
-              </Box>
-            } 
-          />
-        </Route>
+
+<Route path="/manager" element={<ManagerRoute />}>
+  <Route element={<ManagerLayout />}>
+    <Route index element={<DashboardManager />} />
+    <Route path="clients" element={<ClientManager />} />
+    <Route path="voitures" element={<ReservationRequests />} />
+    <Route path="reservations" element={<ReservationsManager />} />
+    <Route
+      path="rapports"
+      element={
+        <Box sx={{ p: 3 }}>
+          <h1 style={{ color: '#e91e63' }}>Rapports et Analyses</h1>
+          <p>Module de reporting et d'analyse des performances en cours de développement.</p>
+        </Box>
+      }
+    />
+    <Route path="parametres" element={
+        <Box sx={{ p: 3 }}>
+          <h1 style={{ color: '#e91e63' }}>Paramètres</h1>
+          <p>Configuration et paramètres de l'application en cours de développement.</p>
+        </Box>
+      }
+    />
+  </Route>
+</Route>
 
       {/* Route dashboard pour admin */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<DashboardAdmin />} />
-        <Route path="manager"  element={<ManagersAdmin/>} />
-      
-      </Route>
+
+<Route path="/admin" element={<AdminRoute />}>
+  <Route element={<AdminLayout />}>
+  <Route index element={<DashboardAdmin />} />
+  <Route path="manager" element={<ManagersAdmin />} />
+</Route>
+</Route>
+
 
       
         

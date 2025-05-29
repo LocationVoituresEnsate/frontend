@@ -12,24 +12,61 @@ import {
   TableRow,
   Button,
   Chip,
-  Divider,
+  Tooltip,
   useTheme,
-  IconButton,
   Avatar,
   LinearProgress,
-  Tooltip
+  IconButton,
 } from '@mui/material';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartTooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import {
   DirectionsCar as CarIcon,
   Event as EventIcon,
   People as PeopleIcon,
   AttachMoney as MoneyIcon,
-  ShowChart as ChartIcon,
   TrendingUp as TrendingUpIcon,
-  ArrowDropUp as ArrowUpIcon,
   Refresh as RefreshIcon,
-  MoreVert as MoreIcon
+  MoreVert as MoreIcon,
 } from '@mui/icons-material';
+
+const ReservationActivityChart = ({ data }) => {
+  return (
+    <Paper elevation={1} sx={{ p: 3, borderRadius: 2, flex: 1, minHeight: 300 }}>
+      <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 2 }}>
+        Activité des réservations par jour <span style={{ marginLeft: 8, fontSize: 24 }}>📅</span>
+      </Typography>
+
+      {data.length > 0 ? (
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis allowDecimals={false} />
+            <RechartTooltip />
+            <Line
+              type="monotone"
+              dataKey="count"
+              stroke="#f06292"
+              strokeWidth={3}
+              dot={{ r: 5, strokeWidth: 2, fill: 'white' }}
+              activeDot={{ r: 7 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      ) : (
+        <Typography sx={{ m: 2 }}>Aucune donnée disponible.</Typography>
+      )}
+    </Paper>
+  );
+};
 
 const DashboardManager = () => {
   const theme = useTheme();
@@ -47,14 +84,16 @@ const DashboardManager = () => {
   // Dynamic Data
   const [recentReservations, setRecentReservations] = useState([]);
   const [topVehicles, setTopVehicles] = useState([]);
+  const [monthlyRevenue, setMonthlyRevenue] = useState([]);
+  const [reservationsPerDay, setReservationsPerDay] = useState([]);
 
   // Format currency
   const formatCurrency = (value) => {
-    if (value === null) return '...';
+    if (value === null || value === undefined) return '...';
     return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
   };
 
-  // Fetch All Data
+  // Fetch all data on mount
   useEffect(() => {
     setIsLoading(true);
     Promise.all([
@@ -62,20 +101,51 @@ const DashboardManager = () => {
       fetch('http://localhost:8000/voitures/count/').then(res => res.json()),
       fetch('http://localhost:8000/reservations/revenu-par-annee/').then(res => res.json()),
       fetch('http://localhost:8000/reservations/pending-count/').then(res => res.json()),
-      fetch('http://localhost:8000/reservations/recent/') // Recent Reservations
-        .then(res => res.json())
-        .then(data => data.recent_reservations || []),
-      fetch('http://localhost:8000/reservations/top-vehicles/') // Top Vehicles
-        .then(res => res.json())
-        .then(data => data.vehicles || [])
+      fetch('http://localhost:8000/reservations/recent/').then(res => res.json()).then(data => data.recent_reservations || []),
+      fetch('http://localhost:8000/reservations/top-vehicles/').then(res => res.json()).then(data => data.vehicles || []),
+      fetch('http://127.0.0.1:8000/reservations/revenu_mensuel/').then(res => res.json()),
+      fetch('http://127.0.0.1:8000/reservations/count-per-day/').then(res => res.json()),
     ])
-      .then(([clientData, voitureData, revenuData, countPendingData, recentReservationsData, topVehiclesData]) => {
+      .then(([
+        clientData,
+        voitureData,
+        revenuData,
+        countPendingData,
+        recentReservationsData,
+        topVehiclesData,
+        revenuMensuelData,
+        reservationsPerDayData
+      ]) => {
         setClientCount(clientData.client_count);
         setCountVoitures(voitureData.count_voitures);
         setCountPending(countPendingData.pending_reservations_count);
         setRevenuAnnee(revenuData.total_revenu);
         setRecentReservations(recentReservationsData);
         setTopVehicles(topVehiclesData);
+
+        // Traiter revenu mensuel
+        if (revenuMensuelData.revenu_mensuel) {
+          const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+          const formatted = revenuMensuelData.revenu_mensuel.map(item => ({
+            month: monthNames[item.month - 1] || item.month,
+            value: item.revenue
+          }));
+          setMonthlyRevenue(formatted);
+        } else {
+          setMonthlyRevenue([]);
+        }
+
+        // Traiter reservations par jour
+        if (reservationsPerDayData.reservations_per_day) {
+          const formattedDays = reservationsPerDayData.reservations_per_day.map(item => ({
+            date: item.date.slice(5), // format MM-DD
+            count: item.count,
+          }));
+          setReservationsPerDay(formattedDays);
+        } else {
+          setReservationsPerDay([]);
+        }
+
         setIsLoading(false);
       })
       .catch(err => {
@@ -85,25 +155,13 @@ const DashboardManager = () => {
       });
   }, []);
 
-  // Simulate refresh
+  // Refresh handler
   const handleRefresh = () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
+    // Re-fetch logic here if needed (or reload the page)
+    // For demo, just disable loading after delay
+    setTimeout(() => setIsLoading(false), 1500);
   };
-
-  // Static Graph Data
-  const bookingData = [20, 35, 15, 45, 30, 50, 25];
-  const revenueData = [
-    { month: 'Jan', value: 5200 },
-    { month: 'Fév', value: 6800 },
-    { month: 'Mar', value: 7500 },
-    { month: 'Avr', value: 8900 },
-    { month: 'Mai', value: 9750 },
-    { month: 'Juin', value: 0 },
-    { month: 'Juil', value: 0 }
-  ];
 
   // Stat Cards
   const stats = [
@@ -115,7 +173,6 @@ const DashboardManager = () => {
 
   return (
     <Box sx={{ p: 3, pb: 5, bgcolor: 'grey.50', minHeight: '100vh' }}>
-      {/* Loading Indicator */}
       {isLoading && (
         <LinearProgress
           sx={{
@@ -129,7 +186,6 @@ const DashboardManager = () => {
         />
       )}
 
-      {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Box>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>
@@ -167,10 +223,16 @@ const DashboardManager = () => {
         </Box>
       </Box>
 
-      {/* Stats Cards */}
+      {/* Stat Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map(stat => (
-          <Grid item xs={12} sm={6} md={3} key={stat.id}>
+          <Box
+            key={stat.id}
+            sx={{
+              width: "calc(25% - 20px)", // 4 cards per line minus gap
+              minWidth: "200px", // responsive guarantee
+            }}
+          >
             <Paper
               elevation={1}
               sx={{
@@ -211,7 +273,7 @@ const DashboardManager = () => {
                 </Typography>
               </Box>
             </Paper>
-          </Grid>
+          </Box>
         ))}
       </Grid>
 
@@ -273,144 +335,44 @@ const DashboardManager = () => {
         </TableContainer>
       </Paper>
 
-      {/* Charts Section */}
-      <Box sx={{ display: 'flex', gap: 3, mb: 4, width: '100%' }}>
-        {/* Booking Activity Chart */}
-        <Paper elevation={1} sx={{ p: 3, borderRadius: 2, flex: 1 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary', display: 'flex', alignItems: 'center' }}>
-              Activité de réservation
-              <Box component="span" sx={{ ml: 1, color: '#f06292', fontSize: '1.2rem' }}>📈</Box>
-            </Typography>
-          </Box>
-          <Box sx={{ height: 200, display: 'flex', alignItems: 'flex-end', gap: 0.5 }}>
-            {bookingData.map((height, index) => (
-              <Tooltip key={index} title={`${height} réservations`} placement="top">
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: height * 3,
-                      bgcolor: '#f06292',
-                      borderTopLeftRadius: 4,
-                      borderTopRightRadius: 4,
-                      transition: 'all 0.3s',
-                      '&:hover': {
-                        bgcolor: '#ec407a',
-                        transform: 'scaleY(1.05)',
-                        transformOrigin: 'bottom'
-                      }
-                    }}
-                  ></Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                    J{index + 1}
-                  </Typography>
-                </Box>
-              </Tooltip>
-            ))}
-          </Box>
-        </Paper>
+      {/* Reservation Activity Chart */}
+    <Box sx={{ display: 'flex', gap: 3, mb: 4, width: '100%' }}>
+  {/* Graphique activité des réservations (50% largeur) */}
+  <Box sx={{ width: '50%' }}>
+    <ReservationActivityChart data={reservationsPerDay} />
+  </Box>
 
-        {/* Monthly Revenue Chart */}
-        <Paper elevation={1} sx={{ p: 3, borderRadius: 2, flex: 1 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary', display: 'flex', alignItems: 'center' }}>
-              Revenus mensuels
-              <Box component="span" sx={{ ml: 1, color: '#f06292', fontSize: '1.2rem' }}>💰</Box>
-            </Typography>
-          </Box>
-          <Box sx={{ height: 200, position: 'relative' }}>
-            {[0, 1, 2, 3, 4].map(line => (
-              <Box
-                key={line}
-                sx={{
-                  position: 'absolute',
-                  left: 60,
-                  right: 0,
-                  bottom: line * 40,
-                  height: '1px',
-                  bgcolor: 'grey.200'
-                }}
-              />
-            ))}
-            <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 60 }}>
-              {[0, 2500, 5000, 7500, 10000].reverse().map((value, index) => (
-                <Typography
-                  key={index}
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ position: 'absolute', right: 5, bottom: index * 40, transform: 'translateY(50%)' }}
-                >
-                  {value}€
-                </Typography>
-              ))}
-            </Box>
-            <Box sx={{ position: 'absolute', left: 60, right: 0, top: 0, bottom: 20, display: 'flex' }}>
-              {revenueData.map((item, index) => {
-                const nextItem = revenueData[index + 1];
-                const max = 10000;
-                return (
-                  <Box
-                    key={index}
-                    sx={{
-                      flex: 1,
-                      position: 'relative',
-                      '&:not(:last-child)': { borderRight: '1px dashed rgba(0,0,0,0.05)' }
-                    }}
-                  >
-                    {item.value > 0 && (
-                      <Tooltip title={`${item.value} €`} placement="top">
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            left: '50%',
-                            bottom: `${(item.value / max) * 100}%`,
-                            transform: 'translate(-50%, 50%)',
-                            width: 8,
-                            height: 8,
-                            bgcolor: '#f06292',
-                            borderRadius: '50%',
-                            border: '2px solid white',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            zIndex: 2
-                          }}
-                        />
-                      </Tooltip>
-                    )}
-                    {nextItem && item.value > 0 && nextItem.value > 0 && (
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          left: '50%',
-                          right: '-50%',
-                          bottom: `${(item.value / max) * 100}%`,
-                          height: 2,
-                          bgcolor: '#f06292',
-                          transform: 'translateY(50%)',
-                          zIndex: 1,
-                          clipPath: `polygon(
-                            0 0, 
-                            100% ${((item.value - nextItem.value) / max) * 100}%, 
-                            100% 100%, 
-                            0 100%
-                          )`
-                        }}
-                      />
-                    )}
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ position: 'absolute', left: '50%', bottom: -20, transform: 'translateX(-50%)' }}
-                    >
-                      {item.month}
-                    </Typography>
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
+  {/* Graphique revenus mensuels (50% largeur) */}
+  <Box sx={{ width: '50%' }}>
+    <Paper elevation={1} sx={{ p: 3, borderRadius: 2, minHeight: 300 }}>
+      <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 2 }}>
+        Revenus mensuels <span style={{ marginLeft: 8, fontSize: 24 }}>💰</span>
+      </Typography>
+      {monthlyRevenue.length > 0 ? (
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={monthlyRevenue} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <RechartTooltip formatter={(value) => value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })} />
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="#f06292"
+              strokeWidth={3}
+              dot={{ r: 5, strokeWidth: 2, fill: 'white' }}
+              activeDot={{ r: 7 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      ) : (
+        <Typography sx={{ m: 2 }}>Aucune donnée disponible.</Typography>
+      )}
+    </Paper>
+  </Box>
+</Box>
+
+
 
       {/* Top Reserved Vehicles */}
       <Paper elevation={1} sx={{ p: 3, borderRadius: 2, width: '100%' }}>
