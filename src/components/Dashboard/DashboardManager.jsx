@@ -71,10 +71,16 @@ const DashboardManager = () => {
       setIsLoading(false);
     }, 1500);
   };
+
+  // Updated formatCurrency function to show MAD instead of EUR
   const formatCurrency = (value) => {
     if (value === null) return '...';
-    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
-  }
+    return value.toLocaleString('fr-FR', { 
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2 
+    }) + ' MAD';
+  };
+
   const stats = [
     { 
       id: 1, 
@@ -122,7 +128,6 @@ const DashboardManager = () => {
     },
   ];
 
-
   const recentReservations = [
     { 
       id: 1, 
@@ -132,7 +137,7 @@ const DashboardManager = () => {
       endDate: '08/05/2025', 
       status: 'Terminée', 
       statusColor: 'success',
-      price: '850 €'
+      price: '8500 MAD'
     },
     { 
       id: 2, 
@@ -142,7 +147,7 @@ const DashboardManager = () => {
       endDate: '10/05/2025', 
       status: 'en cours', 
       statusColor: 'info',
-      price: '520 €'
+      price: '5200 MAD'
     },
     { 
       id: 3, 
@@ -152,7 +157,7 @@ const DashboardManager = () => {
       endDate: '06/05/2025', 
       status: 'Terminée', 
       statusColor: 'default',
-      price: '680 €'
+      price: '6800 MAD'
     },
     { 
       id: 4, 
@@ -162,7 +167,7 @@ const DashboardManager = () => {
       endDate: '12/05/2025', 
       status: ' Pending', 
       statusColor: 'info',
-      price: '1200 €'
+      price: '12000 MAD'
     },
     { 
       id: 5, 
@@ -172,20 +177,20 @@ const DashboardManager = () => {
       endDate: '05/05/2025', 
       status: 'Terminée', 
       statusColor: 'default',
-      price: '960 €'
+      price: '9600 MAD'
     },
   ];
 
   // Données pour le graphique d'activité
   const bookingData = [20, 35, 15, 45, 30, 50, 25];
   
-  // Données pour le graphique de revenus mensuels
+  // Données pour le graphique de revenus mensuels - Updated with MAD values
   const revenueData = [
-    { month: 'Jan', value: 5200 },
-    { month: 'Fév', value: 6800 },
-    { month: 'Mar', value: 7500 },
-    { month: 'Avr', value: 8900 },
-    { month: 'Mai', value: 9750 },
+    { month: 'Jan', value: 52000 },
+    { month: 'Fév', value: 68000 },
+    { month: 'Mar', value: 75000 },
+    { month: 'Avr', value: 89000 },
+    { month: 'Mai', value: 97500 },
     { month: 'Juin', value: 0 }, // Donnée future
     { month: 'Juil', value: 0 }  // Donnée future
   ];
@@ -466,9 +471,9 @@ const DashboardManager = () => {
               />
             ))}
             
-            {/* Étiquettes des montants */}
+            {/* Étiquettes des montants - Updated to show MAD */}
             <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 60 }}>
-              {[0, 2500, 5000, 7500, 10000].reverse().map((value, index) => (
+              {[0, 25000, 50000, 75000, 100000].reverse().map((value, index) => (
                 <Typography 
                   key={index} 
                   variant="caption" 
@@ -480,7 +485,7 @@ const DashboardManager = () => {
                     transform: 'translateY(50%)'
                   }}
                 >
-                  {value}€
+                  {value} MAD
                 </Typography>
               ))}
             </Box>
@@ -498,7 +503,7 @@ const DashboardManager = () => {
             >
               {revenueData.map((item, index) => {
                 const nextItem = revenueData[index + 1];
-                const max = 10000; // Valeur maximale pour l'échelle
+                const max = 100000; // Updated max value for MAD scale
                 
                 return (
                   <Box 
@@ -513,7 +518,7 @@ const DashboardManager = () => {
                   >
                     {/* Point */}
                     {item.value > 0 && (
-                      <Tooltip title={`${item.value} €`} placement="top">
+                      <Tooltip title={`${item.value.toLocaleString()} MAD`} placement="top">
                         <Box
                           sx={{
                             position: 'absolute',

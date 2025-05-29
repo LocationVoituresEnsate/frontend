@@ -423,7 +423,7 @@ const CarCard = ({ car, onDelete, onEdit, index }) => {
       </Typography>
       <Typography variant="subtitle1" color="text.secondary">
         {car.dailyPrice !== undefined
-          ? `${parseFloat(car.dailyPrice).toFixed(2)} € / jour`
+          ? `${parseFloat(car.dailyPrice).toFixed(2)} MAD / jour`
           : "Prix non disponible"}
       </Typography>
 
@@ -739,7 +739,7 @@ const CarCard = ({ car, onDelete, onEdit, index }) => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    label="Prix par jour (€)"
+                    label="Prix par jour (MAD)"
                     type="number"
                     fullWidth
                     value={editData.dailyPrice}
