@@ -82,7 +82,6 @@ const DashboardManager = () => {
     }, 1500);
   };
 
-<<<<<<< HEAD
   // Format monnaie
   const formatCurrency = (value) => {
     if (value === null) return '...';
@@ -90,17 +89,6 @@ const DashboardManager = () => {
   };
 
   // Statistiques
-=======
-  // Updated formatCurrency function to show MAD instead of EUR
-  const formatCurrency = (value) => {
-    if (value === null) return '...';
-    return value.toLocaleString('fr-FR', { 
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2 
-    }) + ' MAD';
-  };
-
->>>>>>> bc121d90d4a505805bfceab37aaa30b498d48f54
   const stats = [
     {
       id: 1,
@@ -136,7 +124,6 @@ const DashboardManager = () => {
     }
   ];
 
-<<<<<<< HEAD
   // Dernières réservations (statique ou peut être dynamique)
   const recentReservations = [
     { id: 1, client: 'Mohammed Alaoui', car: 'Porsche 911', startDate: '05/05/2025', endDate: '08/05/2025', status: 'Terminée', statusColor: 'success', price: '850 €' },
@@ -144,64 +131,10 @@ const DashboardManager = () => {
     { id: 3, client: 'Karim Idrissi', car: 'Mercedes GLC', startDate: '03/05/2025', endDate: '06/05/2025', status: 'Terminée', statusColor: 'default', price: '680 €' },
     { id: 4, client: 'Leila Tahiri', car: 'BMW X5', startDate: '06/05/2025', endDate: '12/05/2025', status: 'Pending', statusColor: 'info', price: '1200 €' },
     { id: 5, client: 'Youssef Benziane', car: 'Range Rover', startDate: '02/05/2025', endDate: '05/05/2025', status: 'Terminée', statusColor: 'default', price: '960 €' }
-=======
-  const recentReservations = [
-    { 
-      id: 1, 
-      client: 'Mohammed Alaoui', 
-      car: 'Porsche 911', 
-      startDate: '05/05/2025', 
-      endDate: '08/05/2025', 
-      status: 'Terminée', 
-      statusColor: 'success',
-      price: '8500 MAD'
-    },
-    { 
-      id: 2, 
-      client: 'Fatima Benani', 
-      car: 'Audi A5', 
-      startDate: '07/05/2025', 
-      endDate: '10/05/2025', 
-      status: 'en cours', 
-      statusColor: 'info',
-      price: '5200 MAD'
-    },
-    { 
-      id: 3, 
-      client: 'Karim Idrissi', 
-      car: 'Mercedes GLC', 
-      startDate: '03/05/2025', 
-      endDate: '06/05/2025', 
-      status: 'Terminée', 
-      statusColor: 'default',
-      price: '6800 MAD'
-    },
-    { 
-      id: 4, 
-      client: 'Leila Tahiri', 
-      car: 'BMW X5', 
-      startDate: '06/05/2025', 
-      endDate: '12/05/2025', 
-      status: ' Pending', 
-      statusColor: 'info',
-      price: '12000 MAD'
-    },
-    { 
-      id: 5, 
-      client: 'Youssef Benziane', 
-      car: 'Range Rover', 
-      startDate: '02/05/2025', 
-      endDate: '05/05/2025', 
-      status: 'Terminée', 
-      statusColor: 'default',
-      price: '9600 MAD'
-    },
->>>>>>> bc121d90d4a505805bfceab37aaa30b498d48f54
   ];
 
   // Graphique réservations
   const bookingData = [20, 35, 15, 45, 30, 50, 25];
-<<<<<<< HEAD
 
   // Graphique revenus
   const revenueData = [
@@ -212,24 +145,6 @@ const DashboardManager = () => {
     { month: 'Mai', value: 9750 },
     { month: 'Juin', value: 0 },
     { month: 'Juil', value: 0 }
-=======
-  
-  // Données pour le graphique de revenus mensuels - Updated with MAD values
-  const revenueData = [
-    { month: 'Jan', value: 52000 },
-    { month: 'Fév', value: 68000 },
-    { month: 'Mar', value: 75000 },
-    { month: 'Avr', value: 89000 },
-    { month: 'Mai', value: 97500 },
-    { month: 'Juin', value: 0 }, // Donnée future
-    { month: 'Juil', value: 0 }  // Donnée future
-  ];
-
-  const topVehicles = [
-    { id: 1, name: 'Porsche 911', bookings: 18, change: '+24%' },
-    { id: 2, name: 'Range Rover Sport', bookings: 15, change: '+18%' },
-    { id: 3, name: 'Mercedes Classe S', bookings: 12, change: '+10%' }
->>>>>>> bc121d90d4a505805bfceab37aaa30b498d48f54
   ];
 
   return (
@@ -437,37 +352,22 @@ const DashboardManager = () => {
                 }}
               />
             ))}
-<<<<<<< HEAD
             <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 60 }}>
               {[0, 2500, 5000, 7500, 10000].reverse().map((value, index) => (
                 <Typography
                   key={index}
                   variant="caption"
-=======
-            
-            {/* Étiquettes des montants - Updated to show MAD */}
-            <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 60 }}>
-              {[0, 25000, 50000, 75000, 100000].reverse().map((value, index) => (
-                <Typography 
-                  key={index} 
-                  variant="caption" 
->>>>>>> bc121d90d4a505805bfceab37aaa30b498d48f54
                   color="text.secondary"
                   sx={{ position: 'absolute', right: 5, bottom: index * 40, transform: 'translateY(50%)' }}
                 >
-                  {value} MAD
+                  {value}€
                 </Typography>
               ))}
             </Box>
             <Box sx={{ position: 'absolute', left: 60, right: 0, top: 0, bottom: 20, display: 'flex' }}>
               {revenueData.map((item, index) => {
                 const nextItem = revenueData[index + 1];
-<<<<<<< HEAD
                 const max = 10000;
-=======
-                const max = 100000; // Updated max value for MAD scale
-                
->>>>>>> bc121d90d4a505805bfceab37aaa30b498d48f54
                 return (
                   <Box
                     key={index}
@@ -478,7 +378,7 @@ const DashboardManager = () => {
                     }}
                   >
                     {item.value > 0 && (
-                      <Tooltip title={`${item.value.toLocaleString()} MAD`} placement="top">
+                      <Tooltip title={`${item.value} €`} placement="top">
                         <Box
                           sx={{
                             position: 'absolute',
