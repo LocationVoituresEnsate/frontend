@@ -89,8 +89,8 @@ const DashboardManager = () => {
 
   // Format currency
   const formatCurrency = (value) => {
-    if (value === null || value === undefined) return '...';
-    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+    if (value === null) return '...';
+    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'MAD' });
   };
 
   // Fetch all data on mount
