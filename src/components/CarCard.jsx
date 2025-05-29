@@ -131,9 +131,6 @@ const CarCard = ({ car }) => {
           borderRadius: 8,
         }}
       />
-      <Typography variant="body2" sx={{ mt: 1 }}>
-        ID Voiture: {car.id ?? "inconnu"}
-      </Typography>
       <Typography variant="h6" mt={1}>
         {car.brand || "Marque inconnue"} {car.model || ""}
       </Typography>
