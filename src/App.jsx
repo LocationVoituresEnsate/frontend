@@ -213,10 +213,7 @@ const App = () => {
         <Route path="/manager" element={<ManagerLayout />}>
           <Route index element={<DashboardManager />} />
           <Route path="clients" element={<ClientManager />} />
-          <Route 
-            path="voitures" 
-            element={
-              <ReservationRequests/>} />
+          <Route path="voitures" element={<ReservationRequests/>} />
                   <Route path="reservations" element={<ReservationsManager/>} />
 
           <Route 
