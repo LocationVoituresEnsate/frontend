@@ -34,20 +34,27 @@ import {
 const DashboardManager = () => {
   const theme = useTheme();
 
-  // États de chargement et erreurs
+  // States
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Données statistiques
+  // Stats data
   const [clientCount, setClientCount] = useState(null);
   const [countVoitures, setCountVoitures] = useState(null);
   const [revenuAnnee, setRevenuAnnee] = useState(null);
   const [countPending, setCountPending] = useState(null);
 
-  // Données des véhicules les plus réservés
+  // Dynamic Data
+  const [recentReservations, setRecentReservations] = useState([]);
   const [topVehicles, setTopVehicles] = useState([]);
 
-  // Récupération des données au montage
+  // Format currency
+  const formatCurrency = (value) => {
+    if (value === null) return '...';
+    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+  };
+
+  // Fetch All Data
   useEffect(() => {
     setIsLoading(true);
     Promise.all([
@@ -55,15 +62,19 @@ const DashboardManager = () => {
       fetch('http://localhost:8000/voitures/count/').then(res => res.json()),
       fetch('http://localhost:8000/reservations/revenu-par-annee/').then(res => res.json()),
       fetch('http://localhost:8000/reservations/pending-count/').then(res => res.json()),
-      fetch('http://localhost:8000/reservations/top-vehicles/') // Nouvel appel
+      fetch('http://localhost:8000/reservations/recent/') // Recent Reservations
+        .then(res => res.json())
+        .then(data => data.recent_reservations || []),
+      fetch('http://localhost:8000/reservations/top-vehicles/') // Top Vehicles
         .then(res => res.json())
         .then(data => data.vehicles || [])
     ])
-      .then(([clientData, voitureData, revenuData, countPendingData, topVehiclesData]) => {
+      .then(([clientData, voitureData, revenuData, countPendingData, recentReservationsData, topVehiclesData]) => {
         setClientCount(clientData.client_count);
         setCountVoitures(voitureData.count_voitures);
         setCountPending(countPendingData.pending_reservations_count);
         setRevenuAnnee(revenuData.total_revenu);
+        setRecentReservations(recentReservationsData);
         setTopVehicles(topVehiclesData);
         setIsLoading(false);
       })
@@ -74,7 +85,7 @@ const DashboardManager = () => {
       });
   }, []);
 
-  // Rafraîchir les données
+  // Simulate refresh
   const handleRefresh = () => {
     setIsLoading(true);
     setTimeout(() => {
@@ -82,61 +93,8 @@ const DashboardManager = () => {
     }, 1500);
   };
 
-  // Format monnaie
-  const formatCurrency = (value) => {
-    if (value === null) return '...';
-    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
-  };
-
-  // Statistiques
-  const stats = [
-    {
-      id: 1,
-      title: 'Voitures disponibles',
-      value: countVoitures !== null ? countVoitures : '...',
-      change: '+2',
-      icon: <CarIcon />,
-      color: { bg: '#e8f5e9', text: '#2e7d32' }
-    },
-    {
-      id: 2,
-      title: 'Réservations en attentes',
-      value: countPending !== null ? countPending : '...',
-      change: '+8',
-      icon: <EventIcon />,
-      color: { bg: '#e3f2fd', text: '#1976d2' }
-    },
-    {
-      id: 3,
-      title: 'Nouveaux clients',
-      value: clientCount !== null ? clientCount : '...',
-      change: '',
-      icon: <PeopleIcon />,
-      color: { bg: '#f3e5f5', text: '#7b1fa2' }
-    },
-    {
-      id: 4,
-      title: 'Revenus du mois',
-      value: formatCurrency(revenuAnnee),
-      change: '+12%',
-      icon: <MoneyIcon />,
-      color: { bg: '#fff8e1', text: '#ff8f00' }
-    }
-  ];
-
-  // Dernières réservations (statique ou peut être dynamique)
-  const recentReservations = [
-    { id: 1, client: 'Mohammed Alaoui', car: 'Porsche 911', startDate: '05/05/2025', endDate: '08/05/2025', status: 'Terminée', statusColor: 'success', price: '850 €' },
-    { id: 2, client: 'Fatima Benani', car: 'Audi A5', startDate: '07/05/2025', endDate: '10/05/2025', status: 'en cours', statusColor: 'info', price: '520 €' },
-    { id: 3, client: 'Karim Idrissi', car: 'Mercedes GLC', startDate: '03/05/2025', endDate: '06/05/2025', status: 'Terminée', statusColor: 'default', price: '680 €' },
-    { id: 4, client: 'Leila Tahiri', car: 'BMW X5', startDate: '06/05/2025', endDate: '12/05/2025', status: 'Pending', statusColor: 'info', price: '1200 €' },
-    { id: 5, client: 'Youssef Benziane', car: 'Range Rover', startDate: '02/05/2025', endDate: '05/05/2025', status: 'Terminée', statusColor: 'default', price: '960 €' }
-  ];
-
-  // Graphique réservations
+  // Static Graph Data
   const bookingData = [20, 35, 15, 45, 30, 50, 25];
-
-  // Graphique revenus
   const revenueData = [
     { month: 'Jan', value: 5200 },
     { month: 'Fév', value: 6800 },
@@ -147,9 +105,17 @@ const DashboardManager = () => {
     { month: 'Juil', value: 0 }
   ];
 
+  // Stat Cards
+  const stats = [
+    { id: 1, title: 'Voitures disponibles', value: countVoitures !== null ? countVoitures : '...', change: '+2', icon: <CarIcon />, color: { bg: '#e8f5e9', text: '#2e7d32' } },
+    { id: 2, title: 'Réservations en attente', value: countPending !== null ? countPending : '...', change: '+8', icon: <EventIcon />, color: { bg: '#e3f2fd', text: '#1976d2' } },
+    { id: 3, title: 'Nouveaux clients', value: clientCount !== null ? clientCount : '...', change: '', icon: <PeopleIcon />, color: { bg: '#f3e5f5', text: '#7b1fa2' } },
+    { id: 4, title: 'Revenus du mois', value: formatCurrency(revenuAnnee), change: '+12%', icon: <MoneyIcon />, color: { bg: '#fff8e1', text: '#ff8f00' } }
+  ];
+
   return (
     <Box sx={{ p: 3, pb: 5, bgcolor: 'grey.50', minHeight: '100vh' }}>
-      {/* Barre de progression pendant le chargement */}
+      {/* Loading Indicator */}
       {isLoading && (
         <LinearProgress
           sx={{
@@ -163,7 +129,7 @@ const DashboardManager = () => {
         />
       )}
 
-      {/* Titre + actions */}
+      {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Box>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>
@@ -201,7 +167,7 @@ const DashboardManager = () => {
         </Box>
       </Box>
 
-      {/* Stats */}
+      {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map(stat => (
           <Grid item xs={12} sm={6} md={3} key={stat.id}>
@@ -249,7 +215,7 @@ const DashboardManager = () => {
         ))}
       </Grid>
 
-      {/* Réservations récentes */}
+      {/* Recent Reservations Table */}
       <Paper elevation={1} sx={{ width: '100%', borderRadius: 2, overflow: 'hidden', mb: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 3, py: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
@@ -282,12 +248,23 @@ const DashboardManager = () => {
                     borderBottom: `1px solid ${theme.palette.divider}`
                   }}
                 >
-                  <TableCell sx={{ fontWeight: 'medium' }}>{reservation.client}</TableCell>
-                  <TableCell>{reservation.car}</TableCell>
-                  <TableCell>{reservation.startDate} - {reservation.endDate}</TableCell>
-                  <TableCell>{reservation.price}</TableCell>
+                  <TableCell sx={{ fontWeight: 'medium' }}>{reservation.client_name}</TableCell>
+                  <TableCell>{reservation.car_name}</TableCell>
+                  <TableCell>{`${reservation.start_date} - ${reservation.end_date}`}</TableCell>
+                  <TableCell>{formatCurrency(reservation.total_price)}</TableCell>
                   <TableCell>
-                    <Chip label={reservation.status} color={reservation.statusColor} size="small" sx={{ fontWeight: 'medium' }} />
+                    <Chip
+                      label={reservation.status}
+                      color={
+                        reservation.status === 'Terminée'
+                          ? 'success'
+                          : reservation.status === 'en cours'
+                          ? 'info'
+                          : 'default'
+                      }
+                      size="small"
+                      sx={{ fontWeight: 'medium' }}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -296,9 +273,9 @@ const DashboardManager = () => {
         </TableContainer>
       </Paper>
 
-      {/* Graphiques */}
+      {/* Charts Section */}
       <Box sx={{ display: 'flex', gap: 3, mb: 4, width: '100%' }}>
-        {/* Activité de réservation */}
+        {/* Booking Activity Chart */}
         <Paper elevation={1} sx={{ p: 3, borderRadius: 2, flex: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary', display: 'flex', alignItems: 'center' }}>
@@ -318,7 +295,11 @@ const DashboardManager = () => {
                       borderTopLeftRadius: 4,
                       borderTopRightRadius: 4,
                       transition: 'all 0.3s',
-                      '&:hover': { bgcolor: '#ec407a', transform: 'scaleY(1.05)', transformOrigin: 'bottom' }
+                      '&:hover': {
+                        bgcolor: '#ec407a',
+                        transform: 'scaleY(1.05)',
+                        transformOrigin: 'bottom'
+                      }
                     }}
                   ></Box>
                   <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -330,7 +311,7 @@ const DashboardManager = () => {
           </Box>
         </Paper>
 
-        {/* Revenus mensuels */}
+        {/* Monthly Revenue Chart */}
         <Paper elevation={1} sx={{ p: 3, borderRadius: 2, flex: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary', display: 'flex', alignItems: 'center' }}>
@@ -431,7 +412,7 @@ const DashboardManager = () => {
         </Paper>
       </Box>
 
-      {/* Véhicules les plus réservés */}
+      {/* Top Reserved Vehicles */}
       <Paper elevation={1} sx={{ p: 3, borderRadius: 2, width: '100%' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
