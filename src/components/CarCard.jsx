@@ -16,12 +16,16 @@ import {
   CircularProgress,
   Alert,
   Grid,
+  Divider,
 } from "@mui/material";
 
 const DefaultCarImage = "https://via.placeholder.com/300x150?text=No+Image";
 
-const CarCard = ({ car, onDelete, onEdit }) => {
-  const [showInfo, setShowInfo] = useState(false);
+const CarCard = ({ car, onDelete, onEdit, index }) => {
+  // Create a unique identifier for this card instance
+  const cardId = car._id || car.id || `car-${index}-${car.brand}-${car.model}`;
+  
+  const [showInfoModal, setShowInfoModal] = useState(false); // Changed to modal
   const [showReserveForm, setShowReserveForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -50,6 +54,10 @@ const CarCard = ({ car, onDelete, onEdit }) => {
     trunkCapacity: "",
     imageUrl: ""
   });
+
+  // State for image upload
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -123,8 +131,12 @@ const CarCard = ({ car, onDelete, onEdit }) => {
         trunkCapacity: car.trunkCapacity || "",
         imageUrl: car.imageUrl || ""
       });
+      
+      // Reset image states when opening edit form
+      setSelectedImage(null);
+      setImagePreview(car.imageUrl || null);
     }
-  }, [car]);
+  }, [car, showEditForm]);
 
   const handleReservationSubmit = async (e) => {
     e.preventDefault();
@@ -139,6 +151,12 @@ const CarCard = ({ car, onDelete, onEdit }) => {
       return;
     }
 
+    const carId = car._id || car.id;
+    if (!carId || carId.startsWith('car-')) {
+      alert("Cette voiture n'a pas d'ID valide pour la réservation");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -146,7 +164,7 @@ const CarCard = ({ car, onDelete, onEdit }) => {
       const token = localStorage.getItem("token");
       const reservationData = {
         client_id: client,
-        voiture_id: car._id,
+        voiture_id: carId,
         start_date: startDate,
         end_date: endDate,
       };
@@ -192,9 +210,10 @@ const CarCard = ({ car, onDelete, onEdit }) => {
       // Debug: Check if car ID exists
       console.log("Car ID for delete:", carId);
       console.log("Full car object:", car);
+      console.log("Card ID:", cardId);
       
-      if (!carId) {
-        throw new Error("ID de la voiture manquant");
+      if (!carId || carId.startsWith('car-')) {
+        throw new Error("Cette voiture n'a pas d'ID valide pour la suppression");
       }
       
       console.log("Deleting car with ID:", carId);
@@ -229,6 +248,11 @@ const CarCard = ({ car, onDelete, onEdit }) => {
       alert("Voiture supprimée avec succès!");
       setShowDeleteConfirm(false);
       
+      // Force page refresh to see changes
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
       // Call parent component's onDelete function if provided
       if (onDelete) {
         onDelete(carId);
@@ -254,9 +278,10 @@ const CarCard = ({ car, onDelete, onEdit }) => {
       // Debug: Check if car ID exists
       console.log("Car ID for update:", carId);
       console.log("Full car object:", car);
+      console.log("Card ID:", cardId);
       
-      if (!carId) {
-        throw new Error("ID de la voiture manquant");
+      if (!carId || carId.startsWith('car-')) {
+        throw new Error("Cette voiture n'a pas d'ID valide pour la modification");
       }
       
       // Don't include the ID in the body - it goes in the URL
@@ -298,6 +323,11 @@ const CarCard = ({ car, onDelete, onEdit }) => {
       alert("Voiture modifiée avec succès!");
       setShowEditForm(false);
       
+      // Force page refresh to see changes
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
       // Call parent component's onEdit function if provided
       if (onEdit) {
         onEdit({...car, ...editData}); // Return updated car data
@@ -318,6 +348,48 @@ const CarCard = ({ car, onDelete, onEdit }) => {
     }));
   };
 
+  // Handle image file selection
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert('Veuillez sélectionner un fichier image valide');
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('La taille de l\'image ne doit pas dépasser 5MB');
+        return;
+      }
+
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+        // Update editData with base64 image
+        setEditData(prev => ({
+          ...prev,
+          imageUrl: e.target.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Reset image selection
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    setEditData(prev => ({
+      ...prev,
+      imageUrl: car.imageUrl || ""
+    }));
+  };
+
   return (
     <Box
       sx={{
@@ -327,6 +399,10 @@ const CarCard = ({ car, onDelete, onEdit }) => {
         m: 1,
         p: 1.5,
         boxShadow: 1,
+        transition: "box-shadow 0.3s ease",
+        "&:hover": {
+          boxShadow: 3,
+        }
       }}
     >
       <img
@@ -339,6 +415,9 @@ const CarCard = ({ car, onDelete, onEdit }) => {
           borderRadius: 8,
         }}
       />
+      <Typography variant="body2" sx={{ mt: 1 }}>
+        ID Voiture: {cardId}
+      </Typography>
       <Typography variant="h6" mt={1}>
         {car.brand || "Marque inconnue"} {car.model || ""}
       </Typography>
@@ -364,9 +443,9 @@ const CarCard = ({ car, onDelete, onEdit }) => {
           <Button
             variant="outlined"
             fullWidth
-            onClick={() => setShowInfo(!showInfo)}
+            onClick={() => setShowInfoModal(true)} // Open modal instead
           >
-            {showInfo ? "Cacher" : "Infos"}
+            Voir Détails
           </Button>
         </Grid>
       </Grid>
@@ -395,27 +474,101 @@ const CarCard = ({ car, onDelete, onEdit }) => {
         </Grid>
       </Grid>
 
-      {showInfo && (
-        <Paper sx={{ mt: 2, p: 2, bgcolor: "#f9f9f9" }}>
-          {[
-            { label: "Année", value: car.year },
-            { label: "Immatriculation", value: car.registrationNumber },
-            { label: "Couleur", value: car.color },
-            { label: "Kilométrage", value: `${car.mileage} km` },
-            { label: "Carburant", value: car.fuelType },
-            { label: "Transmission", value: car.transmission },
-            { label: "Moteur", value: `${car.engineSize} L` },
-            { label: "Puissance", value: `${car.power} ch` },
-            { label: "Portes", value: car.doors },
-            { label: "Places", value: car.seats },
-            { label: "Coffre", value: `${car.trunkCapacity} L` },
-          ].map(({ label, value }) => (
-            <Typography variant="body2" key={label}>
-              <strong>{label} :</strong> {value ?? "N/A"}
-            </Typography>
-          ))}
-        </Paper>
-      )}
+      {/* Car Details Modal - Replaces the expanding panel */}
+      <Dialog
+        open={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2 } }}
+      >
+        <DialogTitle sx={{ backgroundColor: "#e91e63", color: "white" }}>
+          Détails de la voiture
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Grid container spacing={3}>
+            {/* Car Image */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ textAlign: "center" }}>
+                <img
+                  src={car.imageUrl || DefaultCarImage}
+                  alt={`${car.brand || "Marque inconnue"} ${car.model || ""}`}
+                  style={{
+                    width: "100%",
+                    maxWidth: 300,
+                    height: 200,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    border: "1px solid #ddd"
+                  }}
+                />
+                <Typography variant="h6" sx={{ mt: 2, color: "#e91e63" }}>
+                  {car.brand || "Marque inconnue"} {car.model || ""}
+                </Typography>
+                <Typography variant="h5" color="primary" sx={{ fontWeight: "bold" }}>
+                  {car.dailyPrice !== undefined
+                    ? `${parseFloat(car.dailyPrice).toFixed(2)} € / jour`
+                    : "Prix non disponible"}
+                </Typography>
+              </Box>
+            </Grid>
+
+            {/* Car Details */}
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" sx={{ mb: 2, color: "#e91e63" }}>
+                Informations Générales
+              </Typography>
+              
+              {[
+                { label: "ID Voiture", value: cardId },
+                { label: "Année", value: car.year },
+                { label: "Immatriculation", value: car.registrationNumber },
+                { label: "Couleur", value: car.color },
+                { label: "Kilométrage", value: car.mileage ? `${car.mileage} km` : "N/A" },
+              ].map(({ label, value }) => (
+                <Box key={label} sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                  <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                    {label}:
+                  </Typography>
+                  <Typography variant="body1">
+                    {value ?? "N/A"}
+                  </Typography>
+                </Box>
+              ))}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="h6" sx={{ mb: 2, color: "#e91e63" }}>
+                Spécifications Techniques
+              </Typography>
+              
+              {[
+                { label: "Carburant", value: car.fuelType },
+                { label: "Transmission", value: car.transmission },
+                { label: "Moteur", value: car.engineSize ? `${car.engineSize} L` : "N/A" },
+                { label: "Puissance", value: car.power ? `${car.power} ch` : "N/A" },
+                { label: "Portes", value: car.doors },
+                { label: "Places", value: car.seats },
+                { label: "Coffre", value: car.trunkCapacity ? `${car.trunkCapacity} L` : "N/A" },
+              ].map(({ label, value }) => (
+                <Box key={label} sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                  <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                    {label}:
+                  </Typography>
+                  <Typography variant="body1">
+                    {value ?? "N/A"}
+                  </Typography>
+                </Box>
+              ))}
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowInfoModal(false)} variant="contained">
+            Fermer
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Reservation Dialog */}
       <Dialog
@@ -510,8 +663,16 @@ const CarCard = ({ car, onDelete, onEdit }) => {
             Êtes-vous sûr de vouloir supprimer cette voiture ?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            <strong>{car.brand} {car.model}</strong> - {car.registrationNumber}
+            <strong>{car.brand} {car.model}</strong> - {car.registrationNumber || 'Immatriculation inconnue'}
           </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            ID Carte: {cardId}
+          </Typography>
+          {(!car._id && !car.id) && (
+            <Typography variant="body2" color="warning.main" sx={{ mt: 1 }}>
+              ⚠️ Cette voiture n'a pas d'ID de base de données valide
+            </Typography>
+          )}
           <Typography variant="body2" color="error" sx={{ mt: 2 }}>
             Cette action est irréversible.
           </Typography>
@@ -672,12 +833,63 @@ const CarCard = ({ car, onDelete, onEdit }) => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
-                    label="URL de l'image"
-                    fullWidth
-                    value={editData.imageUrl}
-                    onChange={(e) => handleEditInputChange("imageUrl", e.target.value)}
-                  />
+                  <Typography variant="h6" sx={{ mb: 2, color: "#e91e63" }}>
+                    Image de la voiture
+                  </Typography>
+                  
+                  {/* Current/Preview Image */}
+                  <Box sx={{ mb: 2, textAlign: "center" }}>
+                    <img
+                      src={imagePreview || car.imageUrl || DefaultCarImage}
+                      alt="Aperçu"
+                      style={{
+                        width: "100%",
+                        maxWidth: 300,
+                        height: 200,
+                        objectFit: "cover",
+                        borderRadius: 8,
+                        border: "1px solid #ddd"
+                      }}
+                    />
+                  </Box>
+
+                  {/* Image Upload Controls */}
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      fullWidth
+                      sx={{ color: "#e91e63", borderColor: "#e91e63" }}
+                    >
+                      Choisir une nouvelle image
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </Button>
+                    
+                    {selectedImage && (
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Typography variant="body2" sx={{ flex: 1, alignSelf: "center" }}>
+                          {selectedImage.name}
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          onClick={handleRemoveImage}
+                        >
+                          Annuler
+                        </Button>
+                      </Box>
+                    )}
+                    
+                    <Typography variant="caption" color="textSecondary">
+                      Formats acceptés: JPG, PNG, GIF. Taille max: 5MB
+                    </Typography>
+                  </Box>
                 </Grid>
               </Grid>
               {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
