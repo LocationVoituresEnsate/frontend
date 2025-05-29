@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react'; // <-- ajout de useEffect
-import { 
-  Box, 
-  Paper, 
-  Typography, 
-  Grid, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Button, 
-  Chip, 
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Paper,
+  Typography,
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Chip,
   Divider,
   useTheme,
   IconButton,
@@ -33,185 +33,137 @@ import {
 
 const DashboardManager = () => {
   const theme = useTheme();
+
+  // États de chargement et erreurs
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Données statistiques
   const [clientCount, setClientCount] = useState(null);
   const [countVoitures, setCountVoitures] = useState(null);
   const [revenuAnnee, setRevenuAnnee] = useState(null);
   const [countPending, setCountPending] = useState(null);
-  const [error, setError] = useState(null);
 
+  // Données des véhicules les plus réservés
+  const [topVehicles, setTopVehicles] = useState([]);
+
+  // Récupération des données au montage
   useEffect(() => {
     setIsLoading(true);
-  
     Promise.all([
       fetch('http://localhost:8000/customer/count/').then(res => res.json()),
       fetch('http://localhost:8000/voitures/count/').then(res => res.json()),
       fetch('http://localhost:8000/reservations/revenu-par-annee/').then(res => res.json()),
-      fetch('http://localhost:8000/reservations/pending-count/').then(res => res.json())
+      fetch('http://localhost:8000/reservations/pending-count/').then(res => res.json()),
+      fetch('http://localhost:8000/reservations/top-vehicles/') // Nouvel appel
+        .then(res => res.json())
+        .then(data => data.vehicles || [])
     ])
-    .then(([clientData, voitureData, revenuData,countPending]) => {
-      setClientCount(clientData.client_count);
-      setCountVoitures(voitureData.count_voitures);
-      setCountPending(countPending.pending_reservations_count)
-      setRevenuAnnee(revenuData.total_revenu);
-      setIsLoading(false);
-    })
-    .catch(() => {
-      setError('Erreur lors du chargement des données');
-      setIsLoading(false);
-    });
+      .then(([clientData, voitureData, revenuData, countPendingData, topVehiclesData]) => {
+        setClientCount(clientData.client_count);
+        setCountVoitures(voitureData.count_voitures);
+        setCountPending(countPendingData.pending_reservations_count);
+        setRevenuAnnee(revenuData.total_revenu);
+        setTopVehicles(topVehiclesData);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Erreur lors du chargement :', err);
+        setError('Erreur lors du chargement des données');
+        setIsLoading(false);
+      });
   }, []);
-  
-  
-  // Simuler un rechargement des données
+
+  // Rafraîchir les données
   const handleRefresh = () => {
     setIsLoading(true);
-    // Ici tu pourrais refaire un fetch pour actualiser les données
     setTimeout(() => {
       setIsLoading(false);
     }, 1500);
   };
+
+  // Format monnaie
   const formatCurrency = (value) => {
     if (value === null) return '...';
     return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
-  }
+  };
+
+  // Statistiques
   const stats = [
-    { 
-      id: 1, 
-      title: 'Voitures disponibles', 
-      value: countVoitures !== null ? countVoitures : '...', 
-      change: '+2', 
-      icon: <CarIcon />, 
-      color: {
-        bg: '#e8f5e9',
-        text: '#2e7d32',
-      }
+    {
+      id: 1,
+      title: 'Voitures disponibles',
+      value: countVoitures !== null ? countVoitures : '...',
+      change: '+2',
+      icon: <CarIcon />,
+      color: { bg: '#e8f5e9', text: '#2e7d32' }
     },
-    { 
-      id: 2, 
-      title: 'Réservations en attentes', 
-      value: countPending !== null ? countPending : '...', 
-      change: '+8', 
-      icon: <EventIcon />, 
-      color: {
-        bg: '#e3f2fd',
-        text: '#1976d2',
-      }
+    {
+      id: 2,
+      title: 'Réservations en attentes',
+      value: countPending !== null ? countPending : '...',
+      change: '+8',
+      icon: <EventIcon />,
+      color: { bg: '#e3f2fd', text: '#1976d2' }
     },
-    { 
-      id: 3, 
-      title: 'Nouveaux clients', 
-      value: clientCount !== null ? clientCount : '...', 
-      change: '', 
-      icon: <PeopleIcon />, 
-      color: {
-        bg: '#f3e5f5',
-        text: '#7b1fa2',
-      } 
+    {
+      id: 3,
+      title: 'Nouveaux clients',
+      value: clientCount !== null ? clientCount : '...',
+      change: '',
+      icon: <PeopleIcon />,
+      color: { bg: '#f3e5f5', text: '#7b1fa2' }
     },
-    { 
-      id: 4, 
-      title: 'Revenus du mois', 
-      value: formatCurrency(revenuAnnee), 
-      change: '+12%', 
-      icon: <MoneyIcon />, 
-      color: {
-        bg: '#fff8e1',
-        text: '#ff8f00',
-      } 
-    },
+    {
+      id: 4,
+      title: 'Revenus du mois',
+      value: formatCurrency(revenuAnnee),
+      change: '+12%',
+      icon: <MoneyIcon />,
+      color: { bg: '#fff8e1', text: '#ff8f00' }
+    }
   ];
 
-
+  // Dernières réservations (statique ou peut être dynamique)
   const recentReservations = [
-    { 
-      id: 1, 
-      client: 'Mohammed Alaoui', 
-      car: 'Porsche 911', 
-      startDate: '05/05/2025', 
-      endDate: '08/05/2025', 
-      status: 'Terminée', 
-      statusColor: 'success',
-      price: '850 €'
-    },
-    { 
-      id: 2, 
-      client: 'Fatima Benani', 
-      car: 'Audi A5', 
-      startDate: '07/05/2025', 
-      endDate: '10/05/2025', 
-      status: 'en cours', 
-      statusColor: 'info',
-      price: '520 €'
-    },
-    { 
-      id: 3, 
-      client: 'Karim Idrissi', 
-      car: 'Mercedes GLC', 
-      startDate: '03/05/2025', 
-      endDate: '06/05/2025', 
-      status: 'Terminée', 
-      statusColor: 'default',
-      price: '680 €'
-    },
-    { 
-      id: 4, 
-      client: 'Leila Tahiri', 
-      car: 'BMW X5', 
-      startDate: '06/05/2025', 
-      endDate: '12/05/2025', 
-      status: ' Pending', 
-      statusColor: 'info',
-      price: '1200 €'
-    },
-    { 
-      id: 5, 
-      client: 'Youssef Benziane', 
-      car: 'Range Rover', 
-      startDate: '02/05/2025', 
-      endDate: '05/05/2025', 
-      status: 'Terminée', 
-      statusColor: 'default',
-      price: '960 €'
-    },
+    { id: 1, client: 'Mohammed Alaoui', car: 'Porsche 911', startDate: '05/05/2025', endDate: '08/05/2025', status: 'Terminée', statusColor: 'success', price: '850 €' },
+    { id: 2, client: 'Fatima Benani', car: 'Audi A5', startDate: '07/05/2025', endDate: '10/05/2025', status: 'en cours', statusColor: 'info', price: '520 €' },
+    { id: 3, client: 'Karim Idrissi', car: 'Mercedes GLC', startDate: '03/05/2025', endDate: '06/05/2025', status: 'Terminée', statusColor: 'default', price: '680 €' },
+    { id: 4, client: 'Leila Tahiri', car: 'BMW X5', startDate: '06/05/2025', endDate: '12/05/2025', status: 'Pending', statusColor: 'info', price: '1200 €' },
+    { id: 5, client: 'Youssef Benziane', car: 'Range Rover', startDate: '02/05/2025', endDate: '05/05/2025', status: 'Terminée', statusColor: 'default', price: '960 €' }
   ];
 
-  // Données pour le graphique d'activité
+  // Graphique réservations
   const bookingData = [20, 35, 15, 45, 30, 50, 25];
-  
-  // Données pour le graphique de revenus mensuels
+
+  // Graphique revenus
   const revenueData = [
     { month: 'Jan', value: 5200 },
     { month: 'Fév', value: 6800 },
     { month: 'Mar', value: 7500 },
     { month: 'Avr', value: 8900 },
     { month: 'Mai', value: 9750 },
-    { month: 'Juin', value: 0 }, // Donnée future
-    { month: 'Juil', value: 0 }  // Donnée future
-  ];
-
-  const topVehicles = [
-    { id: 1, name: 'Porsche 911', bookings: 18, change: '+24%' },
-    { id: 2, name: 'Range Rover Sport', bookings: 15, change: '+18%' },
-    { id: 3, name: 'Mercedes Classe S', bookings: 12, change: '+10%' }
+    { month: 'Juin', value: 0 },
+    { month: 'Juil', value: 0 }
   ];
 
   return (
     <Box sx={{ p: 3, pb: 5, bgcolor: 'grey.50', minHeight: '100vh' }}>
+      {/* Barre de progression pendant le chargement */}
       {isLoading && (
-        <LinearProgress 
-          sx={{ 
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
+        <LinearProgress
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
             zIndex: 9999,
             height: 3
-          }} 
+          }}
         />
       )}
-      
-      {/* En-tête du Dashboard avec options */}
+
+      {/* Titre + actions */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Box>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>
@@ -221,9 +173,9 @@ const DashboardManager = () => {
             <Typography variant="h6" sx={{ color: 'primary.main' }}>
               Bienvenue dans votre espace de gestion
             </Typography>
-            <Box 
-              component="span" 
-              sx={{ 
+            <Box
+              component="span"
+              sx={{
                 position: 'absolute',
                 bottom: -5,
                 left: 0,
@@ -231,11 +183,10 @@ const DashboardManager = () => {
                 height: 3,
                 bgcolor: 'primary.main',
                 borderRadius: 5
-              }} 
+              }}
             />
           </Box>
         </Box>
-        
         <Box>
           <Tooltip title="Rafraîchir les données">
             <IconButton color="primary" onClick={handleRefresh} disabled={isLoading}>
@@ -250,17 +201,17 @@ const DashboardManager = () => {
         </Box>
       </Box>
 
-      {/* Cartes statistiques */}
+      {/* Stats */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {stats.map((stat) => (
+        {stats.map(stat => (
           <Grid item xs={12} sm={6} md={3} key={stat.id}>
-            <Paper 
-              elevation={1} 
-              sx={{ 
-                p: 3, 
+            <Paper
+              elevation={1}
+              sx={{
+                p: 3,
                 borderRadius: 2,
                 height: '100%',
-                display: 'flex', 
+                display: 'flex',
                 flexDirection: 'column',
                 transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
@@ -278,25 +229,19 @@ const DashboardManager = () => {
                     {stat.value}
                   </Typography>
                 </Box>
-                <Avatar
-                  sx={{ 
-                    bgcolor: stat.color.bg,
-                    color: stat.color.text,
-                  }}
-                >
-                  {stat.icon}
-                </Avatar>
+                <Avatar sx={{ bgcolor: stat.color.bg, color: stat.color.text }}>{stat.icon}</Avatar>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontWeight: 'medium', 
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 'medium',
                     color: 'success.main',
                     display: 'flex',
                     alignItems: 'center'
                   }}
                 >
+                  {stat.change}
                 </Typography>
               </Box>
             </Paper>
@@ -304,51 +249,30 @@ const DashboardManager = () => {
         ))}
       </Grid>
 
-      {/* Table de réservations en pleine largeur */}
-      <Paper 
-        elevation={1} 
-        sx={{ 
-          width: '100%',
-          borderRadius: 2,
-          overflow: 'hidden',
-          mb: 4
-        }}
-      >
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            px: 3, 
-            py: 2
-          }}
-        >
+      {/* Réservations récentes */}
+      <Paper elevation={1} sx={{ width: '100%', borderRadius: 2, overflow: 'hidden', mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 3, py: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
             Réservations récentes
           </Typography>
-          <Button 
-            color="primary" 
-            endIcon={<TrendingUpIcon />}
-            sx={{ textTransform: 'none' }}
-          >
+          <Button color="primary" endIcon={<TrendingUpIcon />} sx={{ textTransform: 'none' }}>
             Voir toutes
           </Button>
         </Box>
-        
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow sx={{ bgcolor: 'primary.main' }}>
-                <TableCell sx={{ color: 'white', fontWeight: 500, width: '20%' }}>Client</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 500, width: '20%' }}>Voiture</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 500, width: '25%' }}>Période</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 500, width: '15%' }}>Prix</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 500, width: '20%' }}>Statut</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 500 }}>Client</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 500 }}>Voiture</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 500 }}>Période</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 500 }}>Prix</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 500 }}>Statut</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {recentReservations.map((reservation) => (
-                <TableRow 
+              {recentReservations.map(reservation => (
+                <TableRow
                   key={reservation.id}
                   sx={{
                     '&:hover': {
@@ -358,19 +282,12 @@ const DashboardManager = () => {
                     borderBottom: `1px solid ${theme.palette.divider}`
                   }}
                 >
-                  <TableCell sx={{ fontWeight: 'medium' }}>
-                    {reservation.client}
-                  </TableCell>
+                  <TableCell sx={{ fontWeight: 'medium' }}>{reservation.client}</TableCell>
                   <TableCell>{reservation.car}</TableCell>
                   <TableCell>{reservation.startDate} - {reservation.endDate}</TableCell>
                   <TableCell>{reservation.price}</TableCell>
                   <TableCell>
-                    <Chip 
-                      label={reservation.status} 
-                      color={reservation.statusColor} 
-                      size="small"
-                      sx={{ fontWeight: 'medium' }}
-                    />
+                    <Chip label={reservation.status} color={reservation.statusColor} size="small" sx={{ fontWeight: 'medium' }} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -379,19 +296,10 @@ const DashboardManager = () => {
         </TableContainer>
       </Paper>
 
-      {/* Les deux graphiques côte à côte */}
-      {/* Les deux graphiques alignés côte à côte dans la largeur complète */}
+      {/* Graphiques */}
       <Box sx={{ display: 'flex', gap: 3, mb: 4, width: '100%' }}>
-        {/* Premier graphique - Activité de réservation */}
-        <Paper 
-          elevation={1} 
-          sx={{ 
-            p: 3, 
-            borderRadius: 2, 
-            flex: 1,
-            width: '50%'
-          }}
-        >
+        {/* Activité de réservation */}
+        <Paper elevation={1} sx={{ p: 3, borderRadius: 2, flex: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary', display: 'flex', alignItems: 'center' }}>
               Activité de réservation
@@ -401,27 +309,16 @@ const DashboardManager = () => {
           <Box sx={{ height: 200, display: 'flex', alignItems: 'flex-end', gap: 0.5 }}>
             {bookingData.map((height, index) => (
               <Tooltip key={index} title={`${height} réservations`} placement="top">
-                <Box 
-                  sx={{ 
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center'
-                  }}
-                >
-                  <Box 
-                    sx={{ 
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Box
+                    sx={{
                       width: '100%',
                       height: height * 3,
                       bgcolor: '#f06292',
                       borderTopLeftRadius: 4,
                       borderTopRightRadius: 4,
                       transition: 'all 0.3s',
-                      '&:hover': {
-                        bgcolor: '#ec407a',
-                        transform: 'scaleY(1.05)',
-                        transformOrigin: 'bottom'
-                      }
+                      '&:hover': { bgcolor: '#ec407a', transform: 'scaleY(1.05)', transformOrigin: 'bottom' }
                     }}
                   ></Box>
                   <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -432,28 +329,18 @@ const DashboardManager = () => {
             ))}
           </Box>
         </Paper>
-        
-        {/* Deuxième graphique - Revenus mensuels */}
-        <Paper 
-          elevation={1} 
-          sx={{ 
-            p: 3, 
-            borderRadius: 2, 
-            flex: 1,
-            width: '50%'
-          }}
-        >
+
+        {/* Revenus mensuels */}
+        <Paper elevation={1} sx={{ p: 3, borderRadius: 2, flex: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary', display: 'flex', alignItems: 'center' }}>
               Revenus mensuels
               <Box component="span" sx={{ ml: 1, color: '#f06292', fontSize: '1.2rem' }}>💰</Box>
             </Typography>
           </Box>
-          
           <Box sx={{ height: 200, position: 'relative' }}>
-            {/* Grille de fond */}
-            {[0, 1, 2, 3, 4].map((line) => (
-              <Box 
+            {[0, 1, 2, 3, 4].map(line => (
+              <Box
                 key={line}
                 sx={{
                   position: 'absolute',
@@ -465,53 +352,31 @@ const DashboardManager = () => {
                 }}
               />
             ))}
-            
-            {/* Étiquettes des montants */}
             <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 60 }}>
               {[0, 2500, 5000, 7500, 10000].reverse().map((value, index) => (
-                <Typography 
-                  key={index} 
-                  variant="caption" 
+                <Typography
+                  key={index}
+                  variant="caption"
                   color="text.secondary"
-                  sx={{ 
-                    position: 'absolute', 
-                    right: 5, 
-                    bottom: index * 40,
-                    transform: 'translateY(50%)'
-                  }}
+                  sx={{ position: 'absolute', right: 5, bottom: index * 40, transform: 'translateY(50%)' }}
                 >
                   {value}€
                 </Typography>
               ))}
             </Box>
-            
-            {/* Graphique linéaire */}
-            <Box 
-              sx={{ 
-                position: 'absolute', 
-                left: 60, 
-                right: 0, 
-                top: 0, 
-                bottom: 20, 
-                display: 'flex'
-              }}
-            >
+            <Box sx={{ position: 'absolute', left: 60, right: 0, top: 0, bottom: 20, display: 'flex' }}>
               {revenueData.map((item, index) => {
                 const nextItem = revenueData[index + 1];
-                const max = 10000; // Valeur maximale pour l'échelle
-                
+                const max = 10000;
                 return (
-                  <Box 
+                  <Box
                     key={index}
-                    sx={{ 
+                    sx={{
                       flex: 1,
                       position: 'relative',
-                      '&:not(:last-child)': {
-                        borderRight: '1px dashed rgba(0,0,0,0.05)'
-                      }
+                      '&:not(:last-child)': { borderRight: '1px dashed rgba(0,0,0,0.05)' }
                     }}
                   >
-                    {/* Point */}
                     {item.value > 0 && (
                       <Tooltip title={`${item.value} €`} placement="top">
                         <Box
@@ -531,8 +396,6 @@ const DashboardManager = () => {
                         />
                       </Tooltip>
                     )}
-                    
-                    {/* Ligne */}
                     {nextItem && item.value > 0 && nextItem.value > 0 && (
                       <Box
                         sx={{
@@ -553,17 +416,10 @@ const DashboardManager = () => {
                         }}
                       />
                     )}
-                    
-                    {/* Étiquette du mois */}
-                    <Typography 
-                      variant="caption" 
+                    <Typography
+                      variant="caption"
                       color="text.secondary"
-                      sx={{ 
-                        position: 'absolute', 
-                        left: '50%', 
-                        bottom: -20,
-                        transform: 'translateX(-50%)'
-                      }}
+                      sx={{ position: 'absolute', left: '50%', bottom: -20, transform: 'translateX(-50%)' }}
                     >
                       {item.month}
                     </Typography>
@@ -586,53 +442,54 @@ const DashboardManager = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-          {topVehicles.map((vehicle) => (
-            <Box
-              key={vehicle.id}
-              sx={{ 
-                bgcolor: '#ff4d8d',
-                color: 'white',
-                borderRadius: 4,
-                p: 2,
-                flex: '1 1 300px',
-                display: 'flex',
-                alignItems: 'center',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-3px)',
-                  boxShadow: 3
-                }
-              }}
-            >
-              <Box 
-                sx={{ 
-                  width: 48, 
-                  height: 48,
-                  bgcolor: 'rgba(255, 255, 255, 0.2)',
-                  borderRadius: '50%',
+          {topVehicles.length > 0 ? (
+            topVehicles.map(vehicle => (
+              <Box
+                key={vehicle.id}
+                sx={{
+                  bgcolor: '#ff4d8d',
+                  color: 'white',
+                  borderRadius: 4,
+                  p: 2,
+                  flex: '1 1 300px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  mr: 2
+                  transition: 'transform 0.2s',
+                  '&:hover': { transform: 'translateY(-3px)', boxShadow: 3 }
                 }}
               >
-                <CarIcon sx={{ color: 'white' }} />
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mr: 2
+                  }}
+                >
+                  <CarIcon sx={{ color: 'white' }} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    {vehicle.name}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    {vehicle.bookings} réservations
+                  </Typography>
+                </Box>
+                <Box sx={{ ml: 'auto' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#bbffbb', fontSize: '1rem' }}>
+                    {vehicle.change}
+                  </Typography>
+                </Box>
               </Box>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white' }}>
-                  {vehicle.name}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                  {vehicle.bookings} réservations
-                </Typography>
-              </Box>
-              <Box sx={{ ml: 'auto' }}>
-                <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#bbffbb', fontSize: '1rem' }}>
-                  {vehicle.change}
-                </Typography>
-              </Box>
-            </Box>
-          ))}
+            ))
+          ) : (
+            <Typography color="text.secondary">Aucune donnée disponible.</Typography>
+          )}
         </Box>
       </Paper>
     </Box>
