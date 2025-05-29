@@ -504,7 +504,7 @@ const CarCard = ({ car, onDelete, onEdit, index }) => {
                 </Typography>
                 <Typography variant="h5" color="primary" sx={{ fontWeight: "bold" }}>
                   {car.dailyPrice !== undefined
-                    ? `${parseFloat(car.dailyPrice).toFixed(2)} € / jour`
+                    ? `${parseFloat(car.dailyPrice).toFixed(2)} MAD / jour`
                     : "Prix non disponible"}
                 </Typography>
               </Box>
