@@ -33,6 +33,7 @@ const DashboardAdminStats = () => {
   const [managerCount, setManagerCount] = useState(0); // Pour stocker le nombre de managers
   const [reservationStats, setReservationStats] = useState([]);
   const [clientStats, setClientStats] = useState([]);
+  const [totalRevenu, setTotalRevenu] = useState(null);
 
   const fetchClientStats = async () => {
     try {
@@ -54,6 +55,26 @@ const DashboardAdminStats = () => {
       );
     }
   };
+
+
+const fetchRevenuStats = async () => {
+  try {
+    const response = await fetch("http://127.0.0.1:8000/reservations/revenu-par-annee/");
+    const data = await response.json();
+
+    // data = { total_revenu: 426.0 }
+     console.log("Data reçue pour revenu total :", data);
+    setTotalRevenu(data.total_revenu);
+    
+  } catch (error) {
+    console.error("Erreur lors du chargement du total revenu", error);
+  }
+};
+
+// Utilise useEffect pour lancer la récupération au chargement
+useEffect(() => {
+  fetchRevenuStats();
+}, []);
 
   const fetchReservationStats = async () => {
     try {
@@ -133,6 +154,7 @@ const DashboardAdminStats = () => {
     fetchClientCount();
     fetchCarCount();
     fetchReservationStats();
+    fetchRevenuStats();
     fetchClientStats();
   }, []);
 
@@ -143,6 +165,7 @@ const DashboardAdminStats = () => {
       fetchClientCount();
       fetchCarCount();
       fetchReservationStats();
+      fetchRevenuStats();
       fetchClientStats();
       setIsLoading(false);
     }, 1500);
@@ -167,7 +190,7 @@ const DashboardAdminStats = () => {
     {
       id: 3,
       title: "Revenus totaux",
-      value: "125K €",
+      value: totalRevenu !== null ? totalRevenu.toFixed(2) + " $" : "Chargement...",
       icon: <MoneyIcon />,
       color: { bg: "#fef1f5", text: "#e91e63" },
     },
@@ -268,7 +291,7 @@ const DashboardAdminStats = () => {
             >
               {stat.title}
             </Typography>
-            <Typography variant="h3" fontWeight={900} color="text.primary" sx={{ mt: 1 }}>
+            <Typography variant="h3" fontWeight={900} color="text.primary" sx={{ mt: 1 ,fontSize: '2.7rem'}}>
               {stat.value}
             </Typography>
           </Box>
