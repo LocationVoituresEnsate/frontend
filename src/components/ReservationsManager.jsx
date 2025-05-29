@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
@@ -7,179 +7,28 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Grid,
   Typography,
-  Alert,
-  CircularProgress,
+  Paper,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Paper,
+  Alert,
+  Grid,
   IconButton,
+  CircularProgress,
+  Fab,
   ImageList,
   ImageListItem,
   ImageListItemBar,
-  Fab,
 } from "@mui/material";
-import {
-  Add as AddIcon,
-  PhotoCamera as PhotoCameraIcon,
-  Delete as DeleteIcon,
-  Close as CloseIcon,
-} from "@mui/icons-material";
 
-// Image par défaut si aucune image
-const DefaultCarImage = "https://via.placeholder.com/300x150?text=No+Image";
+import AddIcon from "@mui/icons-material/Add";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
+import CarCard from "./CarCard";
 
-// Composant CarCard
-const CarCard = ({ car }) => {
-  const [showInfo, setShowInfo] = useState(false);
-  const [showReserveForm, setShowReserveForm] = useState(false);
-
-  const [client, setClient] = useState("");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-
-  const clients = ["Client A", "Client B", "Client C"]; // Exemple clients statiques
-
-  const handleReservationSubmit = (e) => {
-    e.preventDefault();
-    if (!client || !startDate || !endDate) {
-      alert("Veuillez remplir tous les champs");
-      return;
-    }
-    alert(
-      `Réservation confirmée pour ${client} du ${startDate.toLocaleDateString()} au ${endDate.toLocaleDateString()}`
-    );
-    setShowReserveForm(false);
-    setClient("");
-    setStartDate(null);
-    setEndDate(null);
-  };
-
-  return (
-    <Box
-      sx={{
-        border: "1px solid #ccc",
-        borderRadius: 2,
-        width: 320,
-        m: 1,
-        p: 1.5,
-        boxShadow: 1,
-        position: "relative",
-      }}
-    >
-      <img
-        src={car.imageUrl || DefaultCarImage}
-        alt={`${car.brand} ${car.model}`}
-        style={{ width: "100%", height: 150, objectFit: "cover", borderRadius: 8 }}
-      />
-      <Typography variant="h6" mt={1}>
-        {car.brand || "Marque inconnue"} {car.model || ""}
-      </Typography>
-      <Typography variant="subtitle1" color="text.secondary">
-        {car.dailyPrice !== undefined
-          ? `${parseFloat(car.dailyPrice).toFixed(2)} € / jour`
-          : "Prix non disponible"}
-      </Typography>
-
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{ mt: 1 }}
-        onClick={() => setShowReserveForm(true)}
-      >
-        Réserver
-      </Button>
-
-      <Button variant="outlined" sx={{ mt: 1, ml: 1 }} onClick={() => setShowInfo(!showInfo)}>
-        {showInfo ? "Cacher Infos" : "Voir Infos"}
-      </Button>
-
-      {showInfo && (
-        <Paper sx={{ mt: 2, p: 2, bgcolor: "#f9f9f9" }}>
-          <Typography variant="body2">
-            <strong>Année :</strong> {car.year || "N/A"}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Immatriculation :</strong> {car.registrationNumber || "N/A"}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Couleur :</strong> {car.color || "N/A"}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Kilométrage :</strong> {car.mileage !== undefined ? car.mileage : "N/A"} km
-          </Typography>
-          <Typography variant="body2">
-            <strong>Carburant :</strong> {car.fuelType || "N/A"}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Transmission :</strong> {car.transmission || "N/A"}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Moteur :</strong> {car.engineSize !== undefined ? car.engineSize : "N/A"} L
-          </Typography>
-          <Typography variant="body2">
-            <strong>Puissance :</strong> {car.power !== undefined ? car.power : "N/A"} ch
-          </Typography>
-          <Typography variant="body2">
-            <strong>Portes :</strong> {car.doors !== undefined ? car.doors : "N/A"}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Places :</strong> {car.seats !== undefined ? car.seats : "N/A"}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Coffre :</strong> {car.trunkCapacity !== undefined ? car.trunkCapacity : "N/A"} L
-          </Typography>
-        </Paper>
-      )}
-
-      {showReserveForm && (
-        <Dialog
-          open={showReserveForm}
-          onClose={() => setShowReserveForm(false)}
-          maxWidth="sm"
-          fullWidth
-          PaperProps={{ sx: { borderRadius: 2 } }}
-        >
-          <DialogTitle>Réserver la voiture</DialogTitle>
-          <DialogContent>
-            <form onSubmit={handleReservationSubmit}>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Client</InputLabel>
-                <Select
-                  value={client}
-                  onChange={(e) => setClient(e.target.value)}
-                  label="Client"
-                  required
-                >
-                  <MenuItem value="">
-                    <em>-- Sélectionner --</em>
-                  </MenuItem>
-                  {clients.map((c) => (
-                    <MenuItem key={c} value={c}>
-                      {c}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* Ici tu peux rajouter un date picker comme react-datepicker */}
-
-              <DialogActions>
-                <Button onClick={() => setShowReserveForm(false)}>Annuler</Button>
-                <Button type="submit" variant="contained">
-                  Confirmer
-                </Button>
-              </DialogActions>
-            </form>
-          </DialogContent>
-        </Dialog>
-      )}
-    </Box>
-  );
-};
 
 const ReservationsManager = () => {
   const [showForm, setShowForm] = useState(false);
@@ -194,6 +43,7 @@ const ReservationsManager = () => {
   const [errorCars, setErrorCars] = useState(null);
 
   const [formData, setFormData] = useState({
+    _id:"",
     brand: "",
     model: "",
     year: "",
