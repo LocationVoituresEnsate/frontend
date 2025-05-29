@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // <-- ajout de useEffect
 import { 
   Box, 
   Paper, 
@@ -34,21 +34,52 @@ import {
 const DashboardManager = () => {
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const [clientCount, setClientCount] = useState(null);
+  const [countVoitures, setCountVoitures] = useState(null);
+  const [revenuAnnee, setRevenuAnnee] = useState(null);
+  const [countPending, setCountPending] = useState(null);
+  const [error, setError] = useState(null);
 
+  useEffect(() => {
+    setIsLoading(true);
+  
+    Promise.all([
+      fetch('http://localhost:8000/customer/count/').then(res => res.json()),
+      fetch('http://localhost:8000/voitures/count/').then(res => res.json()),
+      fetch('http://localhost:8000/reservations/revenu-par-annee/').then(res => res.json()),
+      fetch('http://localhost:8000/reservations/pending-count/').then(res => res.json())
+    ])
+    .then(([clientData, voitureData, revenuData,countPending]) => {
+      setClientCount(clientData.client_count);
+      setCountVoitures(voitureData.count_voitures);
+      setCountPending(countPending.pending_reservations_count)
+      setRevenuAnnee(revenuData.total_revenu);
+      setIsLoading(false);
+    })
+    .catch(() => {
+      setError('Erreur lors du chargement des données');
+      setIsLoading(false);
+    });
+  }, []);
+  
+  
   // Simuler un rechargement des données
   const handleRefresh = () => {
     setIsLoading(true);
+    // Ici tu pourrais refaire un fetch pour actualiser les données
     setTimeout(() => {
       setIsLoading(false);
     }, 1500);
   };
-
-  // Données fictives pour le tableau de bord
+  const formatCurrency = (value) => {
+    if (value === null) return '...';
+    return value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+  }
   const stats = [
     { 
       id: 1, 
       title: 'Voitures disponibles', 
-      value: '18', 
+      value: countVoitures !== null ? countVoitures : '...', 
       change: '+2', 
       icon: <CarIcon />, 
       color: {
@@ -58,8 +89,8 @@ const DashboardManager = () => {
     },
     { 
       id: 2, 
-      title: 'Réservations actives', 
-      value: '24', 
+      title: 'Réservations en attentes', 
+      value: countPending !== null ? countPending : '...', 
       change: '+8', 
       icon: <EventIcon />, 
       color: {
@@ -70,8 +101,8 @@ const DashboardManager = () => {
     { 
       id: 3, 
       title: 'Nouveaux clients', 
-      value: '7', 
-      change: '+3', 
+      value: clientCount !== null ? clientCount : '...', 
+      change: '', 
       icon: <PeopleIcon />, 
       color: {
         bg: '#f3e5f5',
@@ -81,7 +112,7 @@ const DashboardManager = () => {
     { 
       id: 4, 
       title: 'Revenus du mois', 
-      value: '9 750 €', 
+      value: formatCurrency(revenuAnnee), 
       change: '+12%', 
       icon: <MoneyIcon />, 
       color: {
@@ -90,6 +121,7 @@ const DashboardManager = () => {
       } 
     },
   ];
+
 
   const recentReservations = [
     { 
@@ -256,7 +288,6 @@ const DashboardManager = () => {
                 </Avatar>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 'auto' }}>
-                <ArrowUpIcon sx={{ color: 'success.main', fontSize: 16 }} />
                 <Typography 
                   variant="body2" 
                   sx={{ 
@@ -266,7 +297,6 @@ const DashboardManager = () => {
                     alignItems: 'center'
                   }}
                 >
-                  {stat.change} cette semaine
                 </Typography>
               </Box>
             </Paper>
