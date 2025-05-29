@@ -415,9 +415,6 @@ const CarCard = ({ car, onDelete, onEdit, index }) => {
           borderRadius: 8,
         }}
       />
-      <Typography variant="body2" sx={{ mt: 1 }}>
-        ID Voiture: {cardId}
-      </Typography>
       <Typography variant="h6" mt={1}>
         {car.brand || "Marque inconnue"} {car.model || ""}
       </Typography>
