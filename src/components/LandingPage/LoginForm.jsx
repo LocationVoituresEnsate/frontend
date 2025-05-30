@@ -295,29 +295,7 @@ const LoginForm = () => {
                 </Button>
               </Box>
 
-              <Box sx={{ mt: 2.5, textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Vous n'avez pas de compte ?{' '}
-                  <Link
-                    component="button"
-                    onClick={() => navigate("/register")}
-                    sx={{
-                      color: 'primary.main',
-                      fontWeight: 'bold',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      '&:hover': {
-                        color: 'primary.dark',
-                        textDecoration: 'underline'
-                      }
-                    }}
-                  >
-                    <RegisterIcon fontSize="small" />
-                    Inscrivez-vous
-                  </Link>
-                </Typography>
-              </Box>
+              
             </Box>
           </Paper>
         </Fade>
