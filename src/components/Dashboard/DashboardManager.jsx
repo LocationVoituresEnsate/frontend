@@ -165,8 +165,8 @@ const DashboardManager = () => {
 
   // Stat Cards
   const stats = [
-    { id: 1, title: 'Voitures disponibles', value: countVoitures !== null ? countVoitures : '...', change: '+2', icon: <CarIcon />, color: { bg: '#e8f5e9', text: '#2e7d32' } },
-    { id: 2, title: 'Réservations en attente', value: countPending !== null ? countPending : '...', change: '+8', icon: <EventIcon />, color: { bg: '#e3f2fd', text: '#1976d2' } },
+    { id: 1, title: 'Voitures disponibles', value: countVoitures !== null ? countVoitures : '...', change: '', icon: <CarIcon />, color: { bg: '#e8f5e9', text: '#2e7d32' } },
+    { id: 2, title: 'Réservations en attente', value: countPending !== null ? countPending : '...', change: '', icon: <EventIcon />, color: { bg: '#e3f2fd', text: '#1976d2' } },
     { id: 3, title: 'Nouveaux clients', value: clientCount !== null ? clientCount : '...', change: '', icon: <PeopleIcon />, color: { bg: '#f3e5f5', text: '#7b1fa2' } },
     { id: 4, title: 'Revenus du mois', value: formatCurrency(revenuAnnee), change: '+12%', icon: <MoneyIcon />, color: { bg: '#fff8e1', text: '#ff8f00' } }
   ];
